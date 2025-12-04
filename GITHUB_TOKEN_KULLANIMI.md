@@ -4,7 +4,7 @@
 
 ```bash
 # Remote URL'i token ile güncelle
-git remote set-url origin https://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@github.com/arhaval/pickem.git
+git remote set-url origin https://TOKEN@github.com/arhaval/pickem.git
 
 # Şimdi push yap
 git push -u origin main
@@ -17,7 +17,7 @@ git push -u origin main
 git push -u origin main
 
 # Username sorarsa: GitHub kullanıcı adın (arhaval)
-# Password sorarsa: Token'ı yapıştır (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)
+# Password sorarsa: Token'ı yapıştır
 ```
 
 ## Yöntem 3: Git Credential Helper (Kalıcı)
