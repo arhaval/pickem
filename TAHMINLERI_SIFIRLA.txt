@@ -1,0 +1,19 @@
+-- TAHMINLERİ SIFIRLAMA SCRIPTİ
+-- Bu SQL'i Supabase Dashboard > SQL Editor'da çalıştırın
+
+-- Tüm tahminleri sil (DİKKAT: Bu işlem geri alınamaz!)
+DELETE FROM predictions;
+
+-- Alternatif: Sadece belirli bir kullanıcının tahminlerini sil
+-- Örnek: userId'yi değiştirin
+-- DELETE FROM predictions WHERE user_id = 'KULLANICI_ID_BURAYA';
+
+-- Sezon puanlarını da sıfırlamak isterseniz:
+-- DELETE FROM season_points;
+
+-- İşlem tamamlandıktan sonra sayfayı yenileyin
+
+
+
+
+

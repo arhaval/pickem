@@ -1,0 +1,11 @@
+ALTER TABLE site_settings
+ADD COLUMN IF NOT EXISTS is_ranking_visible BOOLEAN DEFAULT true;
+
+UPDATE site_settings
+SET is_ranking_visible = true
+WHERE is_ranking_visible IS NULL;
+
+
+
+
+

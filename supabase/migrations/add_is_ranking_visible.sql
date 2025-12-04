@@ -1,0 +1,17 @@
+-- site_settings tablosuna is_ranking_visible kolonu ekler
+-- Sıralama görünürlüğünü kontrol etmek için kullanılır
+
+ALTER TABLE site_settings
+ADD COLUMN IF NOT EXISTS is_ranking_visible BOOLEAN DEFAULT true;
+
+COMMENT ON COLUMN site_settings.is_ranking_visible IS 'Sıralama görünürlüğü - true ise sıralama gösterilir, false ise gizlenir';
+
+-- Mevcut kayıtlar için varsayılan değer
+UPDATE site_settings
+SET is_ranking_visible = true
+WHERE is_ranking_visible IS NULL;
+
+
+
+
+

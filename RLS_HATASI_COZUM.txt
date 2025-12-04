@@ -1,0 +1,56 @@
+-- RLS HATASI ÇÖZÜMÜ - KOPYALA YAPIŞTIR
+-- Bu SQL'i Supabase Dashboard > SQL Editor'da çalıştırın
+-- "Run as" → "Service Role" seçin (RLS bypass için)
+
+-- ADIM 1: Predictions Tablosunun user_id Tipini Kontrol Et
+-- Önce user_id kolonunun tipini görelim
+SELECT 
+    column_name, 
+    data_type 
+FROM information_schema.columns 
+WHERE table_name = 'predictions' 
+  AND column_name = 'user_id';
+
+-- ADIM 2: RLS Politikalarını Temizle ve Yeniden Oluştur
+-- Mevcut politikaları temizle
+DROP POLICY IF EXISTS "Kullanıcılar kendi tahminlerini ekleyebilir" ON predictions;
+DROP POLICY IF EXISTS "Kullanıcılar kendi tahminlerini görebilir" ON predictions;
+DROP POLICY IF EXISTS "Kullanıcılar kendi tahminlerini güncelleyebilir" ON predictions;
+
+-- RLS'yi aktif et
+ALTER TABLE predictions ENABLE ROW LEVEL SECURITY;
+
+-- ADIM 3A: Eğer user_id UUID tipindeyse (en yaygın durum)
+-- INSERT Politikası
+CREATE POLICY "Kullanıcılar kendi tahminlerini ekleyebilir"
+ON predictions
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid()::text = user_id::text);
+
+-- SELECT Politikası
+CREATE POLICY "Kullanıcılar kendi tahminlerini görebilir"
+ON predictions
+FOR SELECT
+TO authenticated
+USING (auth.uid()::text = user_id::text);
+
+-- UPDATE Politikası (opsiyonel - admin panelinden güncelleme için gerekli değil)
+CREATE POLICY "Kullanıcılar kendi tahminlerini güncelleyebilir"
+ON predictions
+FOR UPDATE
+TO authenticated
+USING (auth.uid()::text = user_id::text)
+WITH CHECK (auth.uid()::text = user_id::text);
+
+-- ADIM 4: Test Et
+-- Test için kendi kullanıcı ID'nizi kullanarak kontrol edin
+SELECT COUNT(*) FROM predictions WHERE user_id::text = auth.uid()::text;
+
+-- ✅ TAMAMLANDI
+-- Şimdi predictions tablosuna insert yaparken RLS hatası almamanız gerekir
+
+
+
+
+

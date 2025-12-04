@@ -1,0 +1,271 @@
+-- ========================================
+-- RLS HATASI TAM ÇÖZÜM - KOPYALA YAPIŞTIR
+-- ========================================
+-- Bu SQL'i Supabase Dashboard > SQL Editor'da çalıştırın
+-- "Run as" → "Service Role" seçin (RLS bypass için)
+-- 
+-- Bu script tüm RLS politikalarını düzeltir:
+-- 1. predictions tablosu
+-- 2. profiles tablosu (güncelleme için)
+-- 3. season_points tablosu
+-- 4. Storage bucket'lar (avatars, teams, banners)
+-- ========================================
+
+-- ========================================
+-- 1. PREDICTIONS TABLOSU RLS POLİTİKALARI
+-- ========================================
+
+-- Mevcut politikaları temizle
+DROP POLICY IF EXISTS "Kullanıcılar kendi tahminlerini ekleyebilir" ON predictions;
+DROP POLICY IF EXISTS "Kullanıcılar kendi tahminlerini görebilir" ON predictions;
+DROP POLICY IF EXISTS "Kullanıcılar kendi tahminlerini güncelleyebilir" ON predictions;
+DROP POLICY IF EXISTS "Adminler tüm tahminleri görebilir" ON predictions;
+
+-- RLS'yi aktif et
+ALTER TABLE predictions ENABLE ROW LEVEL SECURITY;
+
+-- INSERT Politikası: Kullanıcılar kendi user_id'leri ile tahmin ekleyebilir
+-- user_id UUID veya TEXT olabilir, her iki durumu da destekler
+CREATE POLICY "Kullanıcılar kendi tahminlerini ekleyebilir"
+ON predictions
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid()::text = user_id::text);
+
+-- SELECT Politikası: Kullanıcılar kendi tahminlerini görebilir
+CREATE POLICY "Kullanıcılar kendi tahminlerini görebilir"
+ON predictions
+FOR SELECT
+TO authenticated
+USING (auth.uid()::text = user_id::text);
+
+-- Admin'ler tüm tahminleri görebilir
+CREATE POLICY "Adminler tüm tahminleri görebilir"
+ON predictions
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id::text = auth.uid()::text
+    AND profiles.is_admin = true
+  )
+);
+
+-- ========================================
+-- 2. PROFILES TABLOSU RLS POLİTİKALARI
+-- ========================================
+
+-- Mevcut politikaları temizle
+DROP POLICY IF EXISTS "Kullanıcılar kendi profilini görebilir" ON profiles;
+DROP POLICY IF EXISTS "Kullanıcılar kendi profilini güncelleyebilir" ON profiles;
+DROP POLICY IF EXISTS "Herkes profilleri görebilir" ON profiles;
+
+-- RLS'yi aktif et (eğer değilse)
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- SELECT: Herkes profilleri görebilir (public)
+CREATE POLICY "Herkes profilleri görebilir"
+ON profiles
+FOR SELECT
+TO public
+USING (true);
+
+-- UPDATE: Kullanıcılar kendi profilini güncelleyebilir
+CREATE POLICY "Kullanıcılar kendi profilini güncelleyebilir"
+ON profiles
+FOR UPDATE
+TO authenticated
+USING (auth.uid()::text = id::text)
+WITH CHECK (auth.uid()::text = id::text);
+
+-- INSERT: Profil oluşturma genellikle trigger ile yapılır, ama yine de policy ekleyelim
+DROP POLICY IF EXISTS "Kullanıcılar kendi profilini oluşturabilir" ON profiles;
+CREATE POLICY "Kullanıcılar kendi profilini oluşturabilir"
+ON profiles
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid()::text = id::text);
+
+-- ========================================
+-- 3. SEASON_POINTS TABLOSU RLS POLİTİKALARI
+-- ========================================
+
+-- Mevcut politikaları temizle
+DROP POLICY IF EXISTS "Kullanıcılar kendi puanlarını görebilir" ON season_points;
+DROP POLICY IF EXISTS "Herkes puanları görebilir" ON season_points;
+
+-- RLS'yi aktif et (eğer tablo varsa)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'season_points') THEN
+        ALTER TABLE season_points ENABLE ROW LEVEL SECURITY;
+    END IF;
+END $$;
+
+-- SELECT: Herkes puanları görebilir (leaderboard için)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'season_points') THEN
+        CREATE POLICY "Herkes puanları görebilir"
+        ON season_points
+        FOR SELECT
+        TO public
+        USING (true);
+    END IF;
+END $$;
+
+-- ========================================
+-- 4. STORAGE BUCKET RLS POLİTİKALARI
+-- ========================================
+
+-- Önce mevcut storage politikalarını temizle
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını yükleyebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını okuyabilir" ON storage.objects;
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını silebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Herkes avatarları okuyabilir" ON storage.objects;
+DROP POLICY IF EXISTS "Adminler takım logolarını yükleyebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Herkes takım logolarını okuyabilir" ON storage.objects;
+DROP POLICY IF EXISTS "Adminler banner yükleyebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Herkes banner okuyabilir" ON storage.objects;
+
+-- AVATARS BUCKET
+-- INSERT: Kullanıcılar kendi avatarını yükleyebilir
+CREATE POLICY "Kullanıcılar kendi avatarını yükleyebilir"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- SELECT: Herkes avatarları okuyabilir (public)
+CREATE POLICY "Herkes avatarları okuyabilir"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'avatars');
+
+-- UPDATE: Kullanıcılar kendi avatarını güncelleyebilir
+CREATE POLICY "Kullanıcılar kendi avatarını güncelleyebilir"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- DELETE: Kullanıcılar kendi avatarını silebilir
+CREATE POLICY "Kullanıcılar kendi avatarını silebilir"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- TEAMS BUCKET
+-- INSERT: Adminler takım logolarını yükleyebilir
+CREATE POLICY "Adminler takım logolarını yükleyebilir"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'teams' AND
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id::text = auth.uid()::text
+    AND profiles.is_admin = true
+  )
+);
+
+-- SELECT: Herkes takım logolarını okuyabilir
+CREATE POLICY "Herkes takım logolarını okuyabilir"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'teams');
+
+-- DELETE: Adminler takım logolarını silebilir
+CREATE POLICY "Adminler takım logolarını silebilir"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'teams' AND
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id::text = auth.uid()::text
+    AND profiles.is_admin = true
+  )
+);
+
+-- BANNERS BUCKET (eğer varsa)
+-- INSERT: Adminler banner yükleyebilir
+CREATE POLICY "Adminler banner yükleyebilir"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'banners' AND
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id::text = auth.uid()::text
+    AND profiles.is_admin = true
+  )
+);
+
+-- SELECT: Herkes banner okuyabilir
+CREATE POLICY "Herkes banner okuyabilir"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'banners');
+
+-- ========================================
+-- 5. SITE_SETTINGS TABLOSU (Admin erişimi için)
+-- ========================================
+
+-- Eğer site_settings tablosu varsa
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'site_settings') THEN
+        -- Mevcut politikaları temizle
+        DROP POLICY IF EXISTS "Herkes site ayarlarını görebilir" ON site_settings;
+        DROP POLICY IF EXISTS "Adminler site ayarlarını güncelleyebilir" ON site_settings;
+        
+        -- RLS'yi aktif et
+        ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+        
+        -- SELECT: Herkes site ayarlarını görebilir
+        CREATE POLICY "Herkes site ayarlarını görebilir"
+        ON site_settings
+        FOR SELECT
+        TO public
+        USING (true);
+        
+        -- UPDATE: Adminler site ayarlarını güncelleyebilir
+        CREATE POLICY "Adminler site ayarlarını güncelleyebilir"
+        ON site_settings
+        FOR UPDATE
+        TO authenticated
+        USING (
+          EXISTS (
+            SELECT 1 FROM profiles
+            WHERE profiles.id::text = auth.uid()::text
+            AND profiles.is_admin = true
+          )
+        );
+    END IF;
+END $$;
+
+-- ========================================
+-- ✅ TAMAMLANDI!
+-- ========================================
+-- Şimdi tüm RLS politikaları düzgün şekilde ayarlanmıştır.
+-- Tahmin gönderme, dosya yükleme ve diğer işlemler çalışmalıdır.
+-- ========================================
+

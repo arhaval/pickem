@@ -1,0 +1,84 @@
+-- ========================================
+-- AVATAR YÜKLEME RLS HATASI ÇÖZÜMÜ
+-- ========================================
+-- Bu SQL'i Supabase Dashboard > SQL Editor'da çalıştırın
+-- "Run as" → "Service Role" seçin
+-- ========================================
+
+-- Mevcut avatar politikalarını temizle
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını yükleyebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını okuyabilir" ON storage.objects;
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını güncelleyebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını silebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Herkes avatarları okuyabilir" ON storage.objects;
+
+-- AVATARS BUCKET POLİTİKALARI
+-- Dosya adında user ID kontrolü yaparak daha esnek politika
+
+-- INSERT: Kullanıcılar kendi avatarını yükleyebilir
+-- Dosya adı "avatar-{user_id}-" ile başlamalı veya klasör yapısı {user_id}/avatar.* olmalı
+CREATE POLICY "Kullanıcılar kendi avatarını yükleyebilir"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (
+    -- Klasör yapısı: {user_id}/avatar.*
+    (storage.foldername(name))[1] = auth.uid()::text
+    OR
+    -- Dosya adı: avatar-{user_id}-*
+    (name LIKE 'avatar-' || auth.uid()::text || '-%')
+  )
+);
+
+-- SELECT: Herkes avatarları okuyabilir (public)
+CREATE POLICY "Herkes avatarları okuyabilir"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'avatars');
+
+-- UPDATE: Kullanıcılar kendi avatarını güncelleyebilir
+CREATE POLICY "Kullanıcılar kendi avatarını güncelleyebilir"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (
+    (storage.foldername(name))[1] = auth.uid()::text
+    OR
+    (name LIKE 'avatar-' || auth.uid()::text || '-%')
+  )
+)
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (
+    (storage.foldername(name))[1] = auth.uid()::text
+    OR
+    (name LIKE 'avatar-' || auth.uid()::text || '-%')
+  )
+);
+
+-- DELETE: Kullanıcılar kendi avatarını silebilir
+CREATE POLICY "Kullanıcılar kendi avatarını silebilir"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (
+    (storage.foldername(name))[1] = auth.uid()::text
+    OR
+    (name LIKE 'avatar-' || auth.uid()::text || '-%')
+  )
+);
+
+-- ✅ TAMAMLANDI!
+-- Artık avatar yükleme çalışmalı
+
+
+
+
+

@@ -1,0 +1,28 @@
+-- Predictions Tablosu için RLS Politikaları (user_id kolonu UUID tipindeyse)
+-- Bu SQL'i Supabase Dashboard > SQL Editor'da çalıştırın
+
+-- RLS'yi aktif et
+ALTER TABLE predictions ENABLE ROW LEVEL SECURITY;
+
+-- Mevcut politikaları temizle (varsa)
+DROP POLICY IF EXISTS "Kullanıcılar kendi tahminlerini ekleyebilir" ON predictions;
+DROP POLICY IF EXISTS "Kullanıcılar kendi tahminlerini görebilir" ON predictions;
+
+-- INSERT Politikası: Kullanıcılar kendi user_id'leri ile tahmin ekleyebilir
+CREATE POLICY "Kullanıcılar kendi tahminlerini ekleyebilir"
+ON predictions
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- SELECT Politikası: Kullanıcılar kendi tahminlerini görebilir
+CREATE POLICY "Kullanıcılar kendi tahminlerini görebilir"
+ON predictions
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+
+
+
+

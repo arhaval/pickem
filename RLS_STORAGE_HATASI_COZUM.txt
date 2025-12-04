@@ -1,0 +1,78 @@
+-- STORAGE BUCKET RLS HATASI ÇÖZÜMÜ
+-- Eğer Storage bucket'larına dosya yüklerken RLS hatası alıyorsanız
+
+-- ADIM 1: Storage Bucket RLS Politikalarını Kontrol Et
+-- Avatars bucket için
+CREATE POLICY "Kullanıcılar kendi avatarını yükleyebilir"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+CREATE POLICY "Kullanıcılar kendi avatarını okuyabilir"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+CREATE POLICY "Kullanıcılar kendi avatarını silebilir"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Teams bucket için (sadece admin)
+CREATE POLICY "Adminler takım logolarını yükleyebilir"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'teams' AND
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.is_admin = true
+  )
+);
+
+CREATE POLICY "Herkes takım logolarını okuyabilir"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'teams');
+
+-- Banners bucket için (sadece admin)
+CREATE POLICY "Adminler banner yükleyebilir"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'banners' AND
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid()
+    AND profiles.is_admin = true
+  )
+);
+
+CREATE POLICY "Herkes banner okuyabilir"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'banners');
+
+-- ✅ TAMAMLANDI
+
+
+
+
+

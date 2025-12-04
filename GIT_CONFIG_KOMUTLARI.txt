@@ -1,0 +1,17 @@
+# Git Kullanıcı Bilgilerini Ayarla
+
+# 1. İsim ayarla
+git config --global user.name "arhaval"
+
+# 2. Email ayarla
+git config --global user.email "arhaval2024@gmail.com"
+
+# 3. Ayarları kontrol et
+git config --global user.name
+git config --global user.email
+
+# 4. Commit ve push
+git add .
+git commit -m "Initial commit - Production ready"
+git push -u origin main
+

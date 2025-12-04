@@ -1,0 +1,18 @@
+-- ========================================
+-- USERNAME DEĞİŞTİRME KISITI - MIGRATION
+-- ========================================
+-- Bu SQL'i Supabase Dashboard > SQL Editor'da çalıştırın
+-- ========================================
+
+-- Username değiştirme tarihini takip etmek için kolon ekle
+ALTER TABLE profiles
+ADD COLUMN IF NOT EXISTS username_changed_at TIMESTAMPTZ;
+
+COMMENT ON COLUMN profiles.username_changed_at IS 'Kullanıcı adının en son değiştirildiği tarih - 30 günde bir değiştirme izni için';
+
+-- ✅ TAMAMLANDI!
+
+
+
+
+

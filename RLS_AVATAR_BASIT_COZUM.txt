@@ -1,0 +1,61 @@
+-- ========================================
+-- AVATAR YÜKLEME RLS HATASI - BASIT ÇÖZÜM
+-- ========================================
+-- Bu SQL'i Supabase Dashboard > SQL Editor'da çalıştırın
+-- "Run as" → "Service Role" seçin
+-- ========================================
+
+-- Mevcut avatar politikalarını temizle
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını yükleyebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını okuyabilir" ON storage.objects;
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını güncelleyebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Kullanıcılar kendi avatarını silebilir" ON storage.objects;
+DROP POLICY IF EXISTS "Herkes avatarları okuyabilir" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated kullanıcılar avatar yükleyebilir" ON storage.objects;
+
+-- BASIT ÇÖZÜM: Authenticated kullanıcılar avatarlar bucket'ına yükleyebilir
+CREATE POLICY "Authenticated kullanıcılar avatar yükleyebilir"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'avatars');
+
+-- Herkes avatarları okuyabilir (public)
+CREATE POLICY "Herkes avatarları okuyabilir"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'avatars');
+
+-- Kullanıcılar kendi avatarını güncelleyebilir/silebilir
+-- Dosya adı formatı: avatar-{user_id}-* veya klasör yapısı {user_id}/*
+CREATE POLICY "Kullanıcılar kendi avatarını yönetebilir"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (
+    -- Klasör yapısı: {user_id}/*
+    (storage.foldername(name))[1] = auth.uid()::text
+    OR
+    -- Dosya adı: avatar-{user_id}-*
+    (name LIKE 'avatar-' || auth.uid()::text || '-%')
+  )
+)
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (
+    (storage.foldername(name))[1] = auth.uid()::text
+    OR
+    (name LIKE 'avatar-' || auth.uid()::text || '-%')
+  )
+);
+
+-- ✅ TAMAMLANDI!
+-- Artık avatar yükleme çalışmalı
+
+
+
+
+

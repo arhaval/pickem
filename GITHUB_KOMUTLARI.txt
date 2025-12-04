@@ -1,0 +1,24 @@
+# GitHub'a Yükleme Komutları
+# Git Bash terminalinde sırayla çalıştır:
+
+# ✅ 1. Proje klasörüne git (TAMAMLANDI)
+cd /c/Users/Casper/Desktop/pick
+
+# ✅ 2. Git repository başlat (TAMAMLANDI)
+git init
+
+# 3. Tüm dosyaları ekle (BOŞLUK ÖNEMLİ: "git add ." - noktadan önce boşluk var!)
+git add .
+
+# 4. İlk commit
+git commit -m "Initial commit - Production ready"
+
+# 5. GitHub repo URL'ini ekle (KENDI URL'İN İLE DEĞİŞTİR!)
+# Örnek: git remote add origin https://github.com/casper/pick.git
+git remote add origin https://github.com/KULLANICI_ADIN/REPO_ADI.git
+
+# 6. Main branch'e geç
+git branch -M main
+
+# 7. GitHub'a yükle
+git push -u origin main
