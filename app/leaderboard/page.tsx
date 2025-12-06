@@ -290,16 +290,6 @@ export default function LeaderboardPage() {
               <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#D69ADE]/5 rounded-full blur-3xl"></div>
               
               <div className="relative z-10">
-                {/* Başlık */}
-                <div className="flex items-center justify-center gap-3 mb-6">
-                  <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#B84DC7]"></div>
-                  <Calendar className="h-6 w-6 text-[#B84DC7]" />
-                  <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-wider">
-                    Sezon
-                  </h2>
-                  <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#B84DC7]"></div>
-                </div>
-
                 {/* Sezon Kartları Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {seasons.map((season) => {
