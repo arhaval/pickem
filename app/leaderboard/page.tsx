@@ -31,156 +31,11 @@ interface SeasonPoints {
   };
 }
 
-// Fake kullanıcı verileri - Test için
-const fakeLeaderboard: SeasonPoints[] = [
-  {
-    user_id: "fake-1",
-    season_id: "fake-season",
-    total_points: 15240,
-    correct_predictions: 45,
-    total_predictions: 60,
-    profiles: {
-      username: "ArhavalMaster",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-2",
-    season_id: "fake-season",
-    total_points: 14890,
-    correct_predictions: 42,
-    total_predictions: 58,
-    profiles: {
-      username: "TahminKralı",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-3",
-    season_id: "fake-season",
-    total_points: 14120,
-    correct_predictions: 38,
-    total_predictions: 55,
-    profiles: {
-      username: "TahminCı",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-4",
-    season_id: "fake-season",
-    total_points: 13850,
-    correct_predictions: 40,
-    total_predictions: 62,
-    profiles: {
-      username: "ProGamer",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-5",
-    season_id: "fake-season",
-    total_points: 13210,
-    correct_predictions: 35,
-    total_predictions: 50,
-    profiles: {
-      username: "SkinHunter",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-6",
-    season_id: "fake-season",
-    total_points: 12800,
-    correct_predictions: 33,
-    total_predictions: 48,
-    profiles: {
-      username: "AcePlayer",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-7",
-    season_id: "fake-season",
-    total_points: 12450,
-    correct_predictions: 30,
-    total_predictions: 45,
-    profiles: {
-      username: "HeadshotPro",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-8",
-    season_id: "fake-season",
-    total_points: 12000,
-    correct_predictions: 28,
-    total_predictions: 42,
-    profiles: {
-      username: "ClutchKing",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-9",
-    season_id: "fake-season",
-    total_points: 11500,
-    correct_predictions: 25,
-    total_predictions: 40,
-    profiles: {
-      username: "RifleMaster",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-  {
-    user_id: "fake-10",
-    season_id: "fake-season",
-    total_points: 11000,
-    correct_predictions: 22,
-    total_predictions: 38,
-    profiles: {
-      username: "TacticalMind",
-      avatar_url: null,
-    },
-    seasons: {
-      name: "Test Sezonu",
-    },
-  },
-];
-
 export default function LeaderboardPage() {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
   const [leaderboard, setLeaderboard] = useState<SeasonPoints[]>([]);
   const [loading, setLoading] = useState(true);
-  const [useFakeData, setUseFakeData] = useState(true); // Varsayılan olarak fake data kullan (test için)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { isRankingVisible, loading: rankingVisibilityLoading } = useRankingVisibility();
 
@@ -190,25 +45,15 @@ export default function LeaderboardPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setCurrentUserId(user.id);
-      } else if (useFakeData) {
-        // Fake data kullanılıyorsa test için fake kullanıcı ID'si
-        setCurrentUserId("fake-1");
       }
     });
   }, []);
 
   useEffect(() => {
-    if (useFakeData) {
-      setLeaderboard(fakeLeaderboard);
-      setLoading(false);
-      // Test için fake kullanıcı ID'si ekle (ilk kullanıcıyı mevcut kullanıcı olarak işaretle)
-      if (!currentUserId) {
-        setCurrentUserId("fake-1");
-      }
-    } else if (selectedSeasonId) {
+    if (selectedSeasonId) {
       loadLeaderboard(selectedSeasonId);
     }
-  }, [selectedSeasonId, useFakeData]);
+  }, [selectedSeasonId]);
 
   const loadSeasons = async () => {
     try {
@@ -242,13 +87,6 @@ export default function LeaderboardPage() {
   const loadLeaderboard = async (seasonId: string) => {
     try {
       setLoading(true);
-      
-      // Fake data kullanılıyorsa direkt göster
-      if (useFakeData) {
-        setLeaderboard(fakeLeaderboard);
-        setLoading(false);
-        return;
-      }
 
       const { data, error } = await supabase
         .from("season_points")
@@ -442,81 +280,62 @@ export default function LeaderboardPage() {
           </p>
         </div>
 
-        {/* Üst Kontrol Paneli - Birleşik Tasarım */}
-        <div className="mb-6">
-          <div className="relative rounded-2xl border border-[#B84DC7]/30 bg-gradient-to-br from-[#131720] via-[#0f172a] to-[#131720] p-6 overflow-hidden">
-            {/* Arka plan efekti */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#B84DC7]/5 via-transparent to-[#D69ADE]/5"></div>
-            
-            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Sol: Sezon Seçimi */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#B84DC7]/20 to-[#D69ADE]/20 border border-[#B84DC7]/30">
-                  <Calendar className="h-6 w-6 text-[#B84DC7]" />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    Sezon
-                  </label>
-                  <select
-                    value={selectedSeasonId || ""}
-                    onChange={(e) => setSelectedSeasonId(e.target.value)}
-                    disabled={useFakeData}
-                    className="w-full h-10 rounded-lg border border-[#B84DC7]/30 bg-black/40 px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-[#B84DC7]/50 focus:border-[#B84DC7] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    {seasons.map((season) => (
-                      <option key={season.id} value={season.id}>
-                        {season.name} {season.is_active && "(Aktif)"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Sağ: Test Modu & Tarih */}
-              <div className="flex items-end gap-4">
-                <div className="flex-1">
-                  {selectedSeason && !useFakeData && (
-                    <>
-                      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                        Tarih Aralığı
-                      </label>
-                      <div className="text-sm font-medium text-gray-300 bg-black/40 rounded-lg px-4 py-2 border border-white/10">
+        {/* Sezon Bilgisi - Güzel Tasarım */}
+        {selectedSeason && (
+          <div className="mb-6">
+            <div className="relative rounded-2xl border-2 border-[#B84DC7]/40 bg-gradient-to-br from-[#131720] via-[#1a1f2e] to-[#131720] p-6 overflow-hidden">
+              {/* Arka plan efektleri */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#B84DC7]/10 via-transparent to-[#D69ADE]/10"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#B84DC7]/5 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#D69ADE]/5 rounded-full blur-3xl"></div>
+              
+              <div className="relative z-10">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  {/* Sol: Sezon Bilgileri */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-[#B84DC7]/30 to-[#D69ADE]/30 border-2 border-[#B84DC7]/50 shadow-lg">
+                      <Calendar className="h-8 w-8 text-[#B84DC7]" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-2xl font-black text-white">
+                          {selectedSeason.name}
+                        </h3>
+                        {selectedSeason.is_active && (
+                          <span className="px-3 py-1 rounded-full bg-gradient-to-r from-green-500/20 to-green-400/20 border border-green-400/50 text-green-400 text-xs font-bold uppercase tracking-wider">
+                            Aktif
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-400 flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
                         {formatDate(selectedSeason.start_date)} - {formatDate(selectedSeason.end_date)}
-                      </div>
-                    </>
-                  )}
-                  {useFakeData && (
-                    <>
-                      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                        Mod
-                      </label>
-                      <div className="text-sm font-bold text-[#B84DC7] bg-[#B84DC7]/10 rounded-lg px-4 py-2 border border-[#B84DC7]/30">
-                        Test Sezonu (Fake Data)
-                      </div>
-                    </>
-                  )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Sağ: Sezon Seçici */}
+                  <div className="md:w-64">
+                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                      Sezon Seç
+                    </label>
+                    <select
+                      value={selectedSeasonId || ""}
+                      onChange={(e) => setSelectedSeasonId(e.target.value)}
+                      className="w-full h-12 rounded-lg border-2 border-[#B84DC7]/30 bg-black/60 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-[#B84DC7]/50 focus:border-[#B84DC7] transition-all hover:border-[#B84DC7]/50"
+                    >
+                      {seasons.map((season) => (
+                        <option key={season.id} value={season.id}>
+                          {season.name} {season.is_active && "⭐"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <button
-                  onClick={() => {
-                    setUseFakeData(!useFakeData);
-                    if (!useFakeData && selectedSeasonId) {
-                      loadLeaderboard(selectedSeasonId);
-                    }
-                  }}
-                  className={cn(
-                    "px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 whitespace-nowrap",
-                    useFakeData
-                      ? "bg-gradient-to-r from-[#B84DC7] to-[#D69ADE] text-white hover:from-[#D69ADE] hover:to-[#B84DC7] shadow-lg shadow-[#B84DC7]/30"
-                      : "bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10"
-                  )}
-                >
-                  {useFakeData ? "🧪 Test Açık" : "Test Modu"}
-                </button>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Liderlik Tablosu */}
         {loading ? (
