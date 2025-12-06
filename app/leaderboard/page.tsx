@@ -292,7 +292,7 @@ export default function LeaderboardPage() {
               >
                 {seasons.map((season) => (
                   <option key={season.id} value={season.id}>
-                    {season.name} {season.is_active && "⭐"}
+                    {season.name}
                   </option>
                 ))}
               </select>
@@ -331,81 +331,84 @@ export default function LeaderboardPage() {
           </div>
         ) : (
           <>
-            {/* İlk 3 - 3D Podyum Tasarımı */}
+            {/* İlk 3 - Elit Podyum Tasarımı */}
             {leaderboard.length >= 3 && (
               <div className="mb-8 relative">
-                {/* Podyum Base */}
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#B84DC7]/20 via-[#B84DC7]/10 to-transparent rounded-t-3xl blur-2xl"></div>
+                {/* Podyum Base - Daha Subtle */}
+                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#B84DC7]/10 via-transparent to-transparent rounded-t-2xl blur-xl"></div>
                 
-                <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                   {/* 2. Sıra - Sol */}
-                {leaderboard[1] && (
-                  <Link
-                    href={`/profile?user=${leaderboard[1].user_id}`}
-                      className="group relative transform transition-all duration-500 hover:scale-105 hover:-translate-y-2"
+                  {leaderboard[1] && (
+                    <Link
+                      href={`/profile?user=${leaderboard[1].user_id}`}
+                      className="group relative transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1"
                     >
-                      {/* Kart */}
-                      <div className="relative bg-gradient-to-br from-[#131720] via-[#1a1f2e] to-[#131720] rounded-2xl border-2 border-gray-500/30 p-6 shadow-2xl overflow-hidden">
-                        {/* Glow Efekti */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-gray-400/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      {/* Kart - Gümüş Tema */}
+                      <div className="relative bg-[#131720] rounded-xl border border-gray-600/40 p-5 shadow-lg overflow-hidden">
+                        {/* Subtle Glow */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-gray-600/5 via-transparent to-transparent"></div>
                         
-                        {/* Sıra Badge - Üstte */}
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                          <div className="relative">
-                            <div className="absolute inset-0 bg-gray-500/30 rounded-full blur-md"></div>
-                            <div className="relative bg-gradient-to-br from-gray-500 to-gray-600 rounded-full w-12 h-12 flex items-center justify-center border-2 border-gray-400/50 shadow-xl">
-                              <span className="text-2xl font-black text-white">2</span>
-                            </div>
+                        {/* Sıra Badge - Minimal */}
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                          <div className="bg-gray-600/80 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center border border-gray-500/50 shadow-lg">
+                            <span className="text-lg font-black text-gray-200">2</span>
                           </div>
                         </div>
 
                         {/* İçerik */}
-                        <div className="relative z-10 pt-4">
-                          {/* Avatar - Merkez */}
-                          <div className="flex justify-center mb-4">
+                        <div className="relative z-10 pt-3">
+                          {/* Avatar */}
+                          <div className="flex justify-center mb-3">
                             {leaderboard[1].profiles.avatar_url ? (
                               <div className="relative">
-                                <div className="absolute inset-0 bg-gray-400/30 rounded-full blur-xl animate-pulse"></div>
+                                <div className="absolute inset-0 bg-gray-500/20 rounded-full blur-lg"></div>
                                 <img
                                   src={leaderboard[1].profiles.avatar_url}
                                   alt={leaderboard[1].profiles.username || "Kullanıcı"}
-                                  className="relative w-24 h-24 rounded-full object-cover border-4 border-gray-400/50 shadow-2xl ring-4 ring-gray-400/20"
+                                  className="relative w-20 h-20 rounded-full object-cover border-2 border-gray-500/50 shadow-lg"
                                 />
                               </div>
                             ) : (
                               <div className="relative">
-                                <div className="absolute inset-0 bg-gray-400/30 rounded-full blur-xl"></div>
-                                <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 border-4 border-gray-400/50 flex items-center justify-center shadow-2xl ring-4 ring-gray-400/20">
-                                  <Users className="h-12 w-12 text-gray-300" />
+                                <div className="absolute inset-0 bg-gray-500/20 rounded-full blur-lg"></div>
+                                <div className="relative w-20 h-20 rounded-full bg-gray-600/40 border-2 border-gray-500/50 flex items-center justify-center shadow-lg">
+                                  <Users className="h-10 w-10 text-gray-400" />
                                 </div>
                               </div>
                             )}
                           </div>
 
-                          {/* Kullanıcı Adı */}
-                          <h3 className="text-xl font-black text-white text-center mb-3 group-hover:text-gray-200 transition-colors">
-                            {leaderboard[1].profiles.username || "İsimsiz"}
-                          </h3>
-
-                          {/* Puan - Büyük */}
-                          <div className="text-center mb-3">
-                            <div className="text-4xl font-black text-gray-200 mb-1">
-                              {leaderboard[1].total_points.toLocaleString()}
-                            </div>
-                            <div className="text-xs text-gray-400 uppercase tracking-wider">Puan</div>
+                          {/* Kullanıcı Adı - Kart ile Aynı Renk */}
+                          <div className="bg-[#131720] rounded-lg px-3 py-1.5 mb-3">
+                            <h3 className="text-base font-bold text-gray-200 text-center truncate">
+                              {leaderboard[1].profiles.username || "İsimsiz"}
+                            </h3>
                           </div>
 
-                          {/* İstatistikler */}
-                          <div className="space-y-2 pt-3 border-t border-white/10">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-400">Başarı</span>
-                              <span className="font-bold text-gray-300">
+                          {/* Puan */}
+                          <div className="text-center mb-3">
+                            <div className="text-3xl font-black text-gray-100 mb-0.5">
+                              {leaderboard[1].total_points.toLocaleString()}
+                            </div>
+                            <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Puan</div>
+                          </div>
+
+                          {/* İstatistikler - Net */}
+                          <div className="space-y-1.5 pt-3 border-t border-gray-700/50">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-500 font-medium">Başarı Oranı</span>
+                              <span className="font-bold text-gray-200">
                                 {getAccuracy(leaderboard[1].correct_predictions, leaderboard[1].total_predictions)}%
                               </span>
                             </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-400">Doğru</span>
-                              <span className="font-bold text-gray-300">{leaderboard[1].correct_predictions}</span>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-500 font-medium">Doğru Tahmin</span>
+                              <span className="font-bold text-gray-200">{leaderboard[1].correct_predictions}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-500 font-medium">Toplam Tahmin</span>
+                              <span className="font-bold text-gray-200">{leaderboard[1].total_predictions}</span>
                             </div>
                           </div>
                         </div>
@@ -417,81 +420,81 @@ export default function LeaderboardPage() {
                   {leaderboard[0] && (
                     <Link
                       href={`/profile?user=${leaderboard[0].user_id}`}
-                      className="group relative transform transition-all duration-500 hover:scale-105 hover:-translate-y-2 md:scale-110 md:-translate-y-8"
+                      className="group relative transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 md:scale-105 md:-translate-y-4"
                     >
-                      {/* Kart - Daha Büyük ve Özel */}
-                      <div className="relative bg-gradient-to-br from-yellow-500/30 via-yellow-400/20 to-yellow-600/10 rounded-2xl border-2 border-yellow-400/60 p-8 shadow-2xl overflow-hidden">
-                        {/* Altın Glow Efekti */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 via-transparent to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/50 via-yellow-500/50 to-yellow-400/50 rounded-2xl blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
+                      {/* Kart - Altın Tema - Elit */}
+                      <div className="relative bg-[#1a1612] rounded-xl border border-yellow-600/50 p-6 shadow-xl overflow-hidden">
+                        {/* Subtle Altın Glow */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/10 via-transparent to-yellow-500/5"></div>
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-600/20 via-yellow-500/20 to-yellow-600/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         
-                        {/* Taç İkonu - Üstte */}
-                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
-                          <div className="relative">
-                            <div className="absolute inset-0 bg-yellow-400/40 rounded-full blur-xl animate-pulse"></div>
-                            <div className="relative bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full w-16 h-16 flex items-center justify-center border-4 border-yellow-300/50 shadow-2xl">
-                              <Trophy className="h-8 w-8 text-yellow-100" />
-                            </div>
+                        {/* Taç İkonu - Minimal */}
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                          <div className="bg-yellow-600/90 backdrop-blur-sm rounded-full w-12 h-12 flex items-center justify-center border border-yellow-500/50 shadow-xl">
+                            <Trophy className="h-6 w-6 text-yellow-200" />
                           </div>
                         </div>
 
-                        {/* Sıra Badge */}
-                        <div className="absolute top-4 right-4 z-20">
-                          <div className="bg-yellow-400/30 rounded-lg px-3 py-1.5 border-2 border-yellow-400/60">
-                            <span className="text-xl font-black text-yellow-100">1</span>
+                        {/* Sıra Badge - Minimal */}
+                        <div className="absolute top-3 right-3 z-20">
+                          <div className="bg-yellow-600/80 backdrop-blur-sm rounded-full w-9 h-9 flex items-center justify-center border border-yellow-500/50 shadow-lg">
+                            <span className="text-base font-black text-yellow-100">1</span>
                           </div>
                         </div>
 
                         {/* İçerik */}
-                        <div className="relative z-10 pt-6">
-                          {/* Avatar - Merkez - Daha Büyük */}
-                          <div className="flex justify-center mb-5">
+                        <div className="relative z-10 pt-4">
+                          {/* Avatar */}
+                          <div className="flex justify-center mb-3">
                             {leaderboard[0].profiles.avatar_url ? (
                               <div className="relative">
-                                <div className="absolute inset-0 bg-yellow-400/40 rounded-full blur-2xl animate-pulse"></div>
+                                <div className="absolute inset-0 bg-yellow-600/30 rounded-full blur-lg"></div>
                                 <img
                                   src={leaderboard[0].profiles.avatar_url}
                                   alt={leaderboard[0].profiles.username || "Kullanıcı"}
-                                  className="relative w-32 h-32 rounded-full object-cover border-4 border-yellow-400 shadow-2xl ring-4 ring-yellow-400/40"
+                                  className="relative w-24 h-24 rounded-full object-cover border-2 border-yellow-600/60 shadow-xl"
                                 />
-                                {/* Altın Halo */}
-                                <div className="absolute -inset-2 border-4 border-yellow-400/30 rounded-full animate-ping"></div>
                               </div>
                             ) : (
                               <div className="relative">
-                                <div className="absolute inset-0 bg-yellow-400/40 rounded-full blur-2xl"></div>
-                                <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 border-4 border-yellow-300 flex items-center justify-center shadow-2xl ring-4 ring-yellow-400/40">
-                                  <Users className="h-16 w-16 text-yellow-100" />
+                                <div className="absolute inset-0 bg-yellow-600/30 rounded-full blur-lg"></div>
+                                <div className="relative w-24 h-24 rounded-full bg-yellow-700/40 border-2 border-yellow-600/60 flex items-center justify-center shadow-xl">
+                                  <Users className="h-12 w-12 text-yellow-300" />
                                 </div>
-                                <div className="absolute -inset-2 border-4 border-yellow-400/30 rounded-full animate-ping"></div>
                               </div>
                             )}
                           </div>
 
-                          {/* Kullanıcı Adı */}
-                          <h3 className="text-2xl font-black text-white text-center mb-4 group-hover:text-yellow-100 transition-colors">
-                            {leaderboard[0].profiles.username || "İsimsiz"}
-                          </h3>
-
-                          {/* Puan - Çok Büyük */}
-                          <div className="text-center mb-4">
-                            <div className="text-5xl font-black text-yellow-200 mb-1">
-                              {leaderboard[0].total_points.toLocaleString()}
-                            </div>
-                            <div className="text-xs text-yellow-200/80 uppercase tracking-wider font-semibold">Puan</div>
+                          {/* Kullanıcı Adı - Kart ile Aynı Renk */}
+                          <div className="bg-[#1a1612] rounded-lg px-3 py-1.5 mb-3">
+                            <h3 className="text-lg font-bold text-yellow-200 text-center truncate">
+                              {leaderboard[0].profiles.username || "İsimsiz"}
+                            </h3>
                           </div>
 
-                          {/* İstatistikler */}
-                          <div className="space-y-2 pt-4 border-t border-yellow-400/30">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-yellow-200/80">Başarı</span>
-                              <span className="font-black text-yellow-200 text-lg">
+                          {/* Puan */}
+                          <div className="text-center mb-3">
+                            <div className="text-4xl font-black text-yellow-100 mb-0.5">
+                              {leaderboard[0].total_points.toLocaleString()}
+                            </div>
+                            <div className="text-[10px] text-yellow-300/70 uppercase tracking-wider font-semibold">Puan</div>
+                          </div>
+
+                          {/* İstatistikler - Net */}
+                          <div className="space-y-1.5 pt-3 border-t border-yellow-700/50">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-yellow-300/80 font-medium">Başarı Oranı</span>
+                              <span className="font-bold text-yellow-100">
                                 {getAccuracy(leaderboard[0].correct_predictions, leaderboard[0].total_predictions)}%
                               </span>
                             </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-yellow-200/80">Doğru</span>
-                              <span className="font-black text-yellow-200 text-lg">{leaderboard[0].correct_predictions}</span>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-yellow-300/80 font-medium">Doğru Tahmin</span>
+                              <span className="font-bold text-yellow-100">{leaderboard[0].correct_predictions}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-yellow-300/80 font-medium">Toplam Tahmin</span>
+                              <span className="font-bold text-yellow-100">{leaderboard[0].total_predictions}</span>
                             </div>
                           </div>
                         </div>
@@ -503,70 +506,73 @@ export default function LeaderboardPage() {
                   {leaderboard[2] && (
                     <Link
                       href={`/profile?user=${leaderboard[2].user_id}`}
-                      className="group relative transform transition-all duration-500 hover:scale-105 hover:-translate-y-2"
+                      className="group relative transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1"
                     >
-                      {/* Kart */}
-                      <div className="relative bg-gradient-to-br from-[#131720] via-[#1a1f2e] to-[#131720] rounded-2xl border-2 border-amber-500/30 p-6 shadow-2xl overflow-hidden">
-                        {/* Glow Efekti */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      {/* Kart - Bronz Tema */}
+                      <div className="relative bg-[#131720] rounded-xl border border-amber-700/40 p-5 shadow-lg overflow-hidden">
+                        {/* Subtle Glow */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-700/5 via-transparent to-transparent"></div>
                         
-                        {/* Sıra Badge - Üstte */}
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                          <div className="relative">
-                            <div className="absolute inset-0 bg-amber-500/30 rounded-full blur-md"></div>
-                            <div className="relative bg-gradient-to-br from-amber-600 to-amber-700 rounded-full w-12 h-12 flex items-center justify-center border-2 border-amber-400/50 shadow-xl">
-                              <span className="text-2xl font-black text-white">3</span>
-                            </div>
+                        {/* Sıra Badge - Minimal */}
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                          <div className="bg-amber-700/80 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center border border-amber-600/50 shadow-lg">
+                            <span className="text-lg font-black text-amber-200">3</span>
                           </div>
                         </div>
 
                         {/* İçerik */}
-                        <div className="relative z-10 pt-4">
-                          {/* Avatar - Merkez */}
-                          <div className="flex justify-center mb-4">
+                        <div className="relative z-10 pt-3">
+                          {/* Avatar */}
+                          <div className="flex justify-center mb-3">
                             {leaderboard[2].profiles.avatar_url ? (
                               <div className="relative">
-                                <div className="absolute inset-0 bg-amber-500/30 rounded-full blur-xl animate-pulse"></div>
+                                <div className="absolute inset-0 bg-amber-700/20 rounded-full blur-lg"></div>
                                 <img
                                   src={leaderboard[2].profiles.avatar_url}
                                   alt={leaderboard[2].profiles.username || "Kullanıcı"}
-                                  className="relative w-24 h-24 rounded-full object-cover border-4 border-amber-500/50 shadow-2xl ring-4 ring-amber-500/20"
+                                  className="relative w-20 h-20 rounded-full object-cover border-2 border-amber-700/50 shadow-lg"
                                 />
                               </div>
                             ) : (
                               <div className="relative">
-                                <div className="absolute inset-0 bg-amber-500/30 rounded-full blur-xl"></div>
-                                <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 border-4 border-amber-500/50 flex items-center justify-center shadow-2xl ring-4 ring-amber-500/20">
-                                  <Users className="h-12 w-12 text-amber-200" />
+                                <div className="absolute inset-0 bg-amber-700/20 rounded-full blur-lg"></div>
+                                <div className="relative w-20 h-20 rounded-full bg-amber-800/40 border-2 border-amber-700/50 flex items-center justify-center shadow-lg">
+                                  <Users className="h-10 w-10 text-amber-400" />
                                 </div>
                               </div>
                             )}
                           </div>
 
-                          {/* Kullanıcı Adı */}
-                          <h3 className="text-xl font-black text-white text-center mb-3 group-hover:text-amber-300 transition-colors">
-                            {leaderboard[2].profiles.username || "İsimsiz"}
-                          </h3>
-
-                          {/* Puan - Büyük */}
-                          <div className="text-center mb-3">
-                            <div className="text-4xl font-black text-amber-400 mb-1">
-                              {leaderboard[2].total_points.toLocaleString()}
-                            </div>
-                            <div className="text-xs text-gray-400 uppercase tracking-wider">Puan</div>
+                          {/* Kullanıcı Adı - Kart ile Aynı Renk */}
+                          <div className="bg-[#131720] rounded-lg px-3 py-1.5 mb-3">
+                            <h3 className="text-base font-bold text-amber-200 text-center truncate">
+                              {leaderboard[2].profiles.username || "İsimsiz"}
+                            </h3>
                           </div>
 
-                          {/* İstatistikler */}
-                          <div className="space-y-2 pt-3 border-t border-white/10">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-400">Başarı</span>
-                              <span className="font-bold text-amber-400">
+                          {/* Puan */}
+                          <div className="text-center mb-3">
+                            <div className="text-3xl font-black text-amber-100 mb-0.5">
+                              {leaderboard[2].total_points.toLocaleString()}
+                            </div>
+                            <div className="text-[10px] text-amber-300/70 uppercase tracking-wider font-semibold">Puan</div>
+                          </div>
+
+                          {/* İstatistikler - Net */}
+                          <div className="space-y-1.5 pt-3 border-t border-amber-800/50">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-amber-300/70 font-medium">Başarı Oranı</span>
+                              <span className="font-bold text-amber-200">
                                 {getAccuracy(leaderboard[2].correct_predictions, leaderboard[2].total_predictions)}%
                               </span>
                             </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-400">Doğru</span>
-                              <span className="font-bold text-amber-400">{leaderboard[2].correct_predictions}</span>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-amber-300/70 font-medium">Doğru Tahmin</span>
+                              <span className="font-bold text-amber-200">{leaderboard[2].correct_predictions}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-amber-300/70 font-medium">Toplam Tahmin</span>
+                              <span className="font-bold text-amber-200">{leaderboard[2].total_predictions}</span>
                             </div>
                           </div>
                         </div>
@@ -654,38 +660,45 @@ export default function LeaderboardPage() {
 
                         {/* Kullanıcı Bilgileri */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Link
-                              href={`/profile?user=${entry.user_id}`}
-                              className={cn(
-                                "font-bold truncate transition-colors",
-                                isUserRow
-                                  ? "text-[#B84DC7] text-lg"
-                                  : "text-white group-hover:text-[#B84DC7]"
+                          {/* Nick - Kart ile Aynı Renk */}
+                          <div className={cn(
+                            "rounded-lg px-3 py-1.5 mb-1.5",
+                            isUserRow ? "bg-[#B84DC7]/10" : "bg-[#131720]"
+                          )}>
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/profile?user=${entry.user_id}`}
+                                className={cn(
+                                  "font-bold truncate transition-colors text-sm",
+                                  isUserRow
+                                    ? "text-[#B84DC7]"
+                                    : "text-gray-200 group-hover:text-white"
+                                )}
+                              >
+                                {entry.profiles.username || "İsimsiz Kullanıcı"}
+                              </Link>
+                              {isUserRow && (
+                                <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-[#B84DC7] to-[#D69ADE] text-white text-[10px] font-black shadow-lg">
+                                  SEN
+                                </span>
                               )}
-                            >
-                              {entry.profiles.username || "İsimsiz Kullanıcı"}
-                            </Link>
-                            {isUserRow && (
-                              <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-[#B84DC7] to-[#D69ADE] text-white text-xs font-black shadow-lg">
-                                SEN
-                              </span>
-                            )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 text-xs text-gray-400">
-                            <span className="flex items-center gap-1">
+                          {/* İstatistikler - Net */}
+                          <div className="flex items-center gap-4 text-[11px]">
+                            <span className="flex items-center gap-1 text-gray-400 font-medium">
                               <Medal className="h-3 w-3" />
-                              {entry.correct_predictions}/{entry.total_predictions}
+                              <span className="text-gray-300 font-semibold">{entry.correct_predictions}/{entry.total_predictions}</span>
                             </span>
                             <span className={cn(
-                              "font-semibold",
+                              "font-bold",
                               accuracy >= 70
                                 ? "text-green-400"
                                 : accuracy >= 50
                                 ? "text-yellow-400"
                                 : "text-red-400"
                             )}>
-                              {accuracy}% başarı
+                              {accuracy}% Başarı
                             </span>
                           </div>
                         </div>
