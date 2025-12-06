@@ -1,22 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import TeamLogo from "@/components/team-logo";
 import PageHeader from "@/components/page-header";
 import { Clock, Radio, Trophy, ExternalLink, CheckCircle2, Youtube, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/supabase/client";
+import Image from "next/image";
 
 interface Match {
   id: string;
   teamA: string;
   teamB: string;
+  teamALogo?: string | null;
+  teamBLogo?: string | null;
   matchTime: string;
   matchDate: string;
   status: "upcoming" | "live" | "finished";
   scoreA?: number;
   scoreB?: number;
+  winner?: string | null; // "A" veya "B"
   tournamentName?: string;
   tournamentStage?: string;
   format?: string; // BO1, BO3, BO5
@@ -57,38 +61,57 @@ export default function MatchesPage() {
   }, []);
 
   const loadMatches = async () => {
-    // Agresif timeout - 2 saniye sonra loading'i kapat
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-
     try {
       setLoading(true);
       
-      // matches tablosundan sadece görüntüleme maçlarını çek - Çok kısa timeout
-      const matchesPromise = supabase
+      // matches tablosundan sadece görüntüleme maçlarını çek - Sadece gerekli kolonları seç
+      const { data: matchesData, error } = await supabase
         .from("matches")
-        .select("*")
+        .select("id, team_a, team_b, team_a_logo, team_b_logo, match_time, match_date, tournament_name, tournament_stage, match_format, hltv_ranking_a, hltv_ranking_b, hltv_url, stream_links, score_a, score_b, winner")
         .eq("is_display_match", true)
         .order("match_date", { ascending: true })
         .order("match_time", { ascending: true });
-      
-      const matchesTimeout = new Promise((resolve) => setTimeout(() => resolve({ data: [], error: null }), 1500));
-      const matchesResult = await Promise.race([matchesPromise, matchesTimeout]) as any;
 
-      if (matchesResult?.error) {
-        console.error("Maçlar yüklenirken hata:", matchesResult.error);
+      if (error) {
+        console.error("Maçlar yüklenirken hata:", error);
         setMatches([]);
-        clearTimeout(timeoutId);
-        setLoading(false);
         return;
       }
       
-      const matchesData = matchesResult?.data || [];
+      // Takım logolarını teams tablosundan çek
+      const teamNames = new Set<string>();
+      (matchesData || []).forEach((match: any) => {
+        if (match.team_a) teamNames.add(match.team_a);
+        if (match.team_b) teamNames.add(match.team_b);
+      });
+
+      let teamLogosMap: Record<string, string | null> = {};
       
+      if (teamNames.size > 0) {
+        const { data: teamsData, error: teamsError } = await supabase
+          .from("teams")
+          .select("name, logo_url");
+
+        if (!teamsError && teamsData) {
+          teamsData.forEach((team: any) => {
+            if (team.name) {
+              teamLogosMap[team.name] = team.logo_url || null;
+              const lowerName = team.name.toLowerCase().trim();
+              if (lowerName && !teamLogosMap[lowerName]) {
+                teamLogosMap[lowerName] = team.logo_url || null;
+              }
+            }
+          });
+        }
+      }
 
       // Veritabanı formatını Match formatına çevir
       const formattedMatches: Match[] = (matchesData || []).map((match: any) => {
+        // Takım logolarını teams tablosundan al
+        const teamAKey = match.team_a?.toLowerCase().trim() || '';
+        const teamBKey = match.team_b?.toLowerCase().trim() || '';
+        const teamALogo = teamLogosMap[teamAKey] || teamLogosMap[match.team_a] || (match as any).team_a_logo || null;
+        const teamBLogo = teamLogosMap[teamBKey] || teamLogosMap[match.team_b] || (match as any).team_b_logo || null;
         // Tarih formatını düzenle (YYYY-MM-DD -> DD.MM.YYYY)
         let formattedDate = match.match_date || "";
         if (formattedDate) {
@@ -131,6 +154,8 @@ export default function MatchesPage() {
           id: match.id,
           teamA: match.team_a,
           teamB: match.team_b,
+          teamALogo: teamALogo,
+          teamBLogo: teamBLogo,
           matchTime: match.match_time,
           matchDate: formattedDate,
           status: status,
@@ -143,23 +168,23 @@ export default function MatchesPage() {
           streamLinks: streamLinks,
           scoreA: (match as any).score_a || undefined,
           scoreB: (match as any).score_b || undefined,
+          winner: match.winner || null,
           // Maps henüz eklenmedi, ileride eklenebilir
         };
       });
 
       setMatches(formattedMatches);
+      console.log("Maçlar sayfası - Maçlar yüklendi:", formattedMatches.length);
     } catch (error: any) {
       console.error("Maçlar yüklenirken hata:", error);
       setMatches([]);
-      setLoading(false);
     } finally {
-      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
 
-  // Filtreleme yok, sadece bugünün maçları gösteriliyor
-
+  // Memoize edilmiş maçlar - performans için
+  const memoizedMatches = useMemo(() => matches, [matches]);
 
   return (
     <div className="min-h-screen relative bg-[#0a0e1a]">
@@ -204,6 +229,21 @@ export default function MatchesPage() {
                         <div className="relative z-10 p-6">
                           {/* Üst Kısım - Turnuva */}
                           <div className="mb-4 text-center">
+                            {/* Logo - Turnuva İsminin Üstünde */}
+                            <div className="flex items-center justify-center gap-3 mb-3">
+                              <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#B84DC7]"></div>
+                              <div className="relative h-5 w-5">
+                                <Image
+                                  src="/logo.png"
+                                  alt="Arhaval"
+                                  width={20}
+                                  height={20}
+                                  className="object-contain w-full h-full brightness-0 invert"
+                                />
+                              </div>
+                              <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#B84DC7]"></div>
+                            </div>
+                            
                             {match.tournamentName && (
                               <div className="flex items-center justify-center gap-2 mb-2">
                                 <Trophy className="h-4 w-4 text-[#B84DC7]" />
@@ -233,19 +273,34 @@ export default function MatchesPage() {
                           {/* Ana Maç Bilgisi */}
                           <div className="grid grid-cols-12 gap-4 items-center">
                             {/* Takım A */}
-                            <div className="col-span-4 flex items-center gap-2 justify-end">
+                            <div className={cn(
+                              "col-span-4 flex items-center gap-2 justify-end transition-all",
+                              match.winner === "A" && "bg-green-500/10 rounded-lg p-2 border border-green-500/30"
+                            )}>
                               {match.hltvRankingA && (
                                 <span className="text-sm font-bold text-[#B84DC7]">#{match.hltvRankingA}</span>
                               )}
                               <TeamLogo 
                                 teamName={match.teamA} 
+                                logoUrl={match.teamALogo}
                                 size={64} 
-                                className="ring-2 ring-white/10"
+                                className={cn(
+                                  "ring-2 transition-all",
+                                  match.winner === "A" ? "ring-green-500/50 shadow-lg shadow-green-500/30" : "ring-white/10"
+                                )}
                               />
                               <div className="flex-1">
-                                <h3 className="text-lg font-bold text-white">
-                                  {match.teamA}
-                                </h3>
+                                <div className="flex items-center gap-2">
+                                  <h3 className={cn(
+                                    "text-lg font-bold transition-all",
+                                    match.winner === "A" ? "text-green-400" : "text-white"
+                                  )}>
+                                    {match.teamA}
+                                  </h3>
+                                  {match.winner === "A" && (
+                                    <Trophy className="h-5 w-5 text-green-400" />
+                                  )}
+                                </div>
                               </div>
                             </div>
 
@@ -259,32 +314,60 @@ export default function MatchesPage() {
                                 </div>
                               ) : match.status === "finished" ? (
                                 <div className="text-center">
-                                  <div className="text-2xl font-bold text-white">
-                                    {match.scoreA || 0} - {match.scoreB || 0}
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <div className={cn(
+                                      "text-3xl font-black transition-all",
+                                      match.winner === "A" ? "text-green-400" : match.winner === "B" ? "text-green-400" : "text-white"
+                                    )}>
+                                      {match.scoreA || 0}
+                                    </div>
+                                    <span className="text-2xl font-bold text-gray-500">-</span>
+                                    <div className={cn(
+                                      "text-3xl font-black transition-all",
+                                      match.winner === "B" ? "text-green-400" : match.winner === "A" ? "text-green-400" : "text-white"
+                                    )}>
+                                      {match.scoreB || 0}
+                                    </div>
                                   </div>
+                                  {match.winner && (
+                                    <div className="text-xs text-green-400 font-semibold mt-1">
+                                      {match.winner === "A" ? match.teamA : match.teamB} Kazandı
+                                    </div>
+                                  )}
                                 </div>
                               ) : (
                                 <div className="text-center">
-                                  <div className="text-xl font-bold text-gray-500 mb-1">VS</div>
-                                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{match.matchTime}</span>
-                                  </div>
+                                  <div className="text-xl font-bold text-gray-500">VS</div>
                                 </div>
                               )}
                             </div>
 
                             {/* Takım B */}
-                            <div className="col-span-4 flex items-center gap-2 justify-start">
+                            <div className={cn(
+                              "col-span-4 flex items-center gap-2 justify-start transition-all",
+                              match.winner === "B" && "bg-green-500/10 rounded-lg p-2 border border-green-500/30"
+                            )}>
                               <div className="flex-1 text-right">
-                                <h3 className="text-lg font-bold text-white">
-                                  {match.teamB}
-                                </h3>
+                                <div className="flex items-center justify-end gap-2">
+                                  {match.winner === "B" && (
+                                    <Trophy className="h-5 w-5 text-green-400" />
+                                  )}
+                                  <h3 className={cn(
+                                    "text-lg font-bold transition-all",
+                                    match.winner === "B" ? "text-green-400" : "text-white"
+                                  )}>
+                                    {match.teamB}
+                                  </h3>
+                                </div>
                               </div>
                               <TeamLogo 
                                 teamName={match.teamB} 
+                                logoUrl={match.teamBLogo}
                                 size={64} 
-                                className="ring-2 ring-white/10"
+                                className={cn(
+                                  "ring-2 transition-all",
+                                  match.winner === "B" ? "ring-green-500/50 shadow-lg shadow-green-500/30" : "ring-white/10"
+                                )}
                               />
                               {match.hltvRankingB && (
                                 <span className="text-sm font-bold text-[#B84DC7]">#{match.hltvRankingB}</span>

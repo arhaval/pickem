@@ -53,6 +53,8 @@ interface SiteSettings {
   match_of_the_day_streams: string | null; // JSON string: Array<{platform: string, channel: string}>
   // Partnerler (JSON formatında: [{name: "Partner Adı", logo_url: "url", url: "link"}, ...])
   partners: string | null; // JSON string: Array<{name: string, logo_url: string, url: string | null}>
+  // Tahmin kilitleme ayarı
+  prediction_lock_minutes_before_match: number | null; // Maçtan kaç dakika önce kilitlenecek (0 = maç saati)
 }
 
 export default function AdminSettings() {
@@ -95,6 +97,7 @@ export default function AdminSettings() {
     match_of_the_day_tournament: null,
     match_of_the_day_streams: null,
     partners: null,
+    prediction_lock_minutes_before_match: 0, // Varsayılan: 0 (maç saati)
   });
   const [streams, setStreams] = useState<Array<{platform: string, channel: string}>>([]);
   const [partners, setPartners] = useState<Array<{logo_url: string, url: string | null}>>([]);
@@ -120,9 +123,31 @@ export default function AdminSettings() {
   const partnerFileInputRefs = useRef<Map<number, HTMLInputElement>>(new Map());
 
   useEffect(() => {
-    loadSettings();
-    loadMatchesAndTeams();
+    let isMounted = true;
+    
+    const loadData = async () => {
+      await Promise.all([
+        loadSettingsWithCleanup(isMounted),
+        loadMatchesAndTeamsWithCleanup(isMounted)
+      ]);
+    };
+    
+    loadData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
+  
+  const loadSettingsWithCleanup = async (isMounted: boolean) => {
+    if (!isMounted) return;
+    await loadSettings();
+  };
+
+  const loadMatchesAndTeamsWithCleanup = async (isMounted: boolean) => {
+    if (!isMounted) return;
+    await loadMatchesAndTeams();
+  };
 
   // match_of_the_day_id değiştiğinde maç bilgilerini yükle
   useEffect(() => {
@@ -319,6 +344,7 @@ export default function AdminSettings() {
           ...(data as any),
           // is_ranking_visible kolonu yoksa varsayılan değer kullan
           is_ranking_visible: (data as any).is_ranking_visible ?? true,
+          prediction_lock_minutes_before_match: (data as any).prediction_lock_minutes_before_match ?? 0,
         });
         // Streams'i parse et
         if ((data as any).match_of_the_day_streams) {
@@ -839,6 +865,11 @@ export default function AdminSettings() {
         updateData.is_ranking_visible = formData.is_ranking_visible;
       }
 
+      // prediction_lock_minutes_before_match kolonu varsa ekle (opsiyonel)
+      if (formData.hasOwnProperty('prediction_lock_minutes_before_match')) {
+        updateData.prediction_lock_minutes_before_match = formData.prediction_lock_minutes_before_match ?? 0;
+      }
+
       // profile_banner kolonları varsa ekle (opsiyonel)
       if (formData.hasOwnProperty('profile_banner_url')) {
         updateData.profile_banner_url = formData.profile_banner_url || null;
@@ -1196,6 +1227,49 @@ export default function AdminSettings() {
                     }`}
                   />
                 </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Tahmin Kilitleme Ayarı */}
+          <div className="bg-[#131720] border border-white/10 rounded-lg p-6">
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">Tahmin Kilitleme Ayarı</h2>
+                <p className="text-sm text-gray-400">
+                  Maçtan kaç dakika önce tahminlerin kilitleneceğini belirler
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium text-gray-300">
+                  Kilitlenme Süresi (dakika):
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="1440"
+                  value={formData.prediction_lock_minutes_before_match ?? 0}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      prediction_lock_minutes_before_match: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  className="w-32 bg-[#0a0e1a] border-white/10 text-white"
+                  placeholder="0"
+                />
+                <span className="text-sm text-gray-400">
+                  {formData.prediction_lock_minutes_before_match === 0
+                    ? "(Maç saati geldiğinde kilitlenir)"
+                    : formData.prediction_lock_minutes_before_match === 1
+                    ? "(Maçtan 1 dakika önce kilitlenir)"
+                    : `(Maçtan ${formData.prediction_lock_minutes_before_match} dakika önce kilitlenir)`}
+                </span>
+              </div>
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                <p className="text-xs text-blue-300">
+                  💡 Örnek: 15 dakika seçerseniz, maç 20:00'de başlayacaksa tahminler 19:45'te kilitlenir.
+                </p>
               </div>
             </div>
           </div>
@@ -2106,3 +2180,4 @@ export default function AdminSettings() {
     </div>
   );
 }
+
