@@ -280,56 +280,124 @@ export default function LeaderboardPage() {
           </p>
         </div>
 
-        {/* Sezon Bilgisi - Güzel Tasarım */}
+        {/* Sezon Bölümü - Güzel Tasarım */}
         {selectedSeason && (
-          <div className="mb-6">
-            <div className="relative rounded-2xl border-2 border-[#B84DC7]/40 bg-gradient-to-br from-[#131720] via-[#1a1f2e] to-[#131720] p-6 overflow-hidden">
+          <div className="mb-8">
+            <div className="relative rounded-2xl border-2 border-[#B84DC7]/40 bg-gradient-to-br from-[#131720] via-[#1a1f2e] to-[#131720] p-6 md:p-8 overflow-hidden">
               {/* Arka plan efektleri */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#B84DC7]/10 via-transparent to-[#D69ADE]/10"></div>
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#B84DC7]/5 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#D69ADE]/5 rounded-full blur-3xl"></div>
+              <div className="absolute top-0 right-0 w-96 h-96 bg-[#B84DC7]/5 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#D69ADE]/5 rounded-full blur-3xl"></div>
               
               <div className="relative z-10">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  {/* Sol: Sezon Bilgileri */}
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-[#B84DC7]/30 to-[#D69ADE]/30 border-2 border-[#B84DC7]/50 shadow-lg">
-                      <Calendar className="h-8 w-8 text-[#B84DC7]" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-2xl font-black text-white">
-                          {selectedSeason.name}
-                        </h3>
-                        {selectedSeason.is_active && (
-                          <span className="px-3 py-1 rounded-full bg-gradient-to-r from-green-500/20 to-green-400/20 border border-green-400/50 text-green-400 text-xs font-bold uppercase tracking-wider">
-                            Aktif
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-400 flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(selectedSeason.start_date)} - {formatDate(selectedSeason.end_date)}
-                      </p>
-                    </div>
-                  </div>
+                {/* Başlık */}
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#B84DC7]"></div>
+                  <Calendar className="h-6 w-6 text-[#B84DC7]" />
+                  <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-wider">
+                    Sezon
+                  </h2>
+                  <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#B84DC7]"></div>
+                </div>
 
-                  {/* Sağ: Sezon Seçici */}
-                  <div className="md:w-64">
-                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                      Sezon Seç
-                    </label>
-                    <select
-                      value={selectedSeasonId || ""}
-                      onChange={(e) => setSelectedSeasonId(e.target.value)}
-                      className="w-full h-12 rounded-lg border-2 border-[#B84DC7]/30 bg-black/60 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-[#B84DC7]/50 focus:border-[#B84DC7] transition-all hover:border-[#B84DC7]/50"
-                    >
-                      {seasons.map((season) => (
-                        <option key={season.id} value={season.id}>
-                          {season.name} {season.is_active && "⭐"}
-                        </option>
-                      ))}
-                    </select>
+                {/* Sezon Kartları Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {seasons.map((season) => {
+                    const isSelected = season.id === selectedSeasonId;
+                    const isActive = season.is_active;
+                    
+                    return (
+                      <button
+                        key={season.id}
+                        onClick={() => setSelectedSeasonId(season.id)}
+                        className={cn(
+                          "relative rounded-xl border-2 p-4 text-left transition-all duration-300 overflow-hidden group",
+                          isSelected
+                            ? "border-[#B84DC7] bg-gradient-to-br from-[#B84DC7]/20 to-[#D69ADE]/10 shadow-lg shadow-[#B84DC7]/20 scale-105"
+                            : "border-white/10 bg-gradient-to-br from-[#131720] to-[#0f172a] hover:border-[#B84DC7]/30 hover:scale-102"
+                        )}
+                      >
+                        {/* Glow Efekti */}
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-[#B84DC7]/10 via-transparent to-[#D69ADE]/10"></div>
+                        )}
+                        
+                        <div className="relative z-10">
+                          {/* Sezon Adı ve Aktif Badge */}
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className={cn(
+                              "font-black text-lg transition-colors",
+                              isSelected ? "text-white" : "text-gray-300 group-hover:text-white"
+                            )}>
+                              {season.name}
+                            </h3>
+                            {isActive && (
+                              <span className="px-2 py-1 rounded-full bg-gradient-to-r from-green-500/20 to-green-400/20 border border-green-400/50 text-green-400 text-xs font-bold uppercase">
+                                Aktif
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Tarih */}
+                          <p className="text-xs text-gray-400 flex items-center gap-1.5">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(season.start_date)} - {formatDate(season.end_date)}
+                          </p>
+                          
+                          {/* Seçili İndikatör */}
+                          {isSelected && (
+                            <div className="absolute top-2 right-2">
+                              <div className="w-3 h-3 rounded-full bg-[#B84DC7] shadow-lg shadow-[#B84DC7]/50"></div>
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Seçili Sezon Detayı */}
+                <div className="pt-6 border-t border-white/10">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-[#B84DC7]/30 to-[#D69ADE]/30 border-2 border-[#B84DC7]/50 shadow-lg">
+                        <Trophy className="h-7 w-7 text-[#B84DC7]" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-2xl font-black text-white">
+                            {selectedSeason.name}
+                          </h3>
+                          {selectedSeason.is_active && (
+                            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-green-500/20 to-green-400/20 border border-green-400/50 text-green-400 text-xs font-bold uppercase tracking-wider animate-pulse">
+                              Aktif Sezon
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-400 flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(selectedSeason.start_date)} - {formatDate(selectedSeason.end_date)}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* İstatistikler */}
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-black text-[#B84DC7]">
+                          {leaderboard.length}
+                        </div>
+                        <div className="text-xs text-gray-400 uppercase">Oyuncu</div>
+                      </div>
+                      {leaderboard.length > 0 && (
+                        <div className="text-center">
+                          <div className="text-2xl font-black text-yellow-400">
+                            {leaderboard[0]?.total_points.toLocaleString() || 0}
+                          </div>
+                          <div className="text-xs text-gray-400 uppercase">En Yüksek</div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
