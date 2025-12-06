@@ -742,7 +742,7 @@ export default function Home() {
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white mb-3">
               <span className="bg-gradient-to-r from-white via-[#D69ADE] to-white bg-clip-text text-transparent">
-                SON VIDEOLARIMIZ
+                İÇERİKLERİMİZ
               </span>
             </h2>
             <p className="text-sm md:text-base text-gray-400 uppercase tracking-wider">
