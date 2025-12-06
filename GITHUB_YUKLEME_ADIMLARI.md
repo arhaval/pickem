@@ -83,3 +83,7 @@ GitHub'a yüklendikten sonra:
 
 **Hangi yöntemi kullanacaksın?** GitHub Desktop daha kolay! 😊
 
+
+
+
+

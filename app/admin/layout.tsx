@@ -35,7 +35,7 @@ const navigation = [
     icon: Trophy,
   },
   {
-    name: "Fikstür ve Sonuçlar",
+    name: "Tahminler",
     href: "/admin/matches",
     icon: Calendar,
   },

@@ -9,3 +9,7 @@ COMMENT ON COLUMN site_settings.partners IS 'Partner listesi JSON formatında: [
 
 
 
+
+
+
+

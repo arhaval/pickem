@@ -75,13 +75,21 @@ export default function PageHeader({ type, title, description }: PageHeaderProps
         .single();
 
       if (error) {
+        // Kolon yoksa sessizce devam et (banner gösterilmez)
+        if (error.code === '42703' || error.message?.includes('does not exist')) {
+          console.warn(`Banner kolonu bulunamadı: ${fieldName}. Banner gösterilmeyecek.`);
+          setBannerUrl(null);
+          setButtonText(null);
+          setButtonLink(null);
+          return;
+        }
         console.error("Banner verisi yüklenirken hata:", JSON.stringify(error, null, 2));
         return;
       }
 
-      setBannerUrl(data[fieldName]);
-      setButtonText(data[buttonTextField]);
-      setButtonLink(data[buttonLinkField]);
+      setBannerUrl(data?.[fieldName] || null);
+      setButtonText(data?.[buttonTextField] || null);
+      setButtonLink(data?.[buttonLinkField] || null);
     } catch (error: any) {
       console.error("Banner verisi yüklenirken hata:", JSON.stringify(error, null, 2));
     } finally {

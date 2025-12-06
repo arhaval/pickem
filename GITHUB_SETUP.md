@@ -76,3 +76,7 @@ GitHub'a yüklendikten sonra:
 
 **Önemli:** Git yüklü değilse önce Git'i yüklemen gerekiyor.
 
+
+
+
+

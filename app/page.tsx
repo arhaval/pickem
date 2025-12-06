@@ -533,37 +533,41 @@ export default function Home() {
                 <div className="grid grid-cols-5 gap-6 items-center">
                   {/* Takım A */}
                   <div className="col-span-2 flex flex-col items-center gap-4">
-                    {matchOfTheDay.team_a_logo ? (
-                      <img
-                        src={matchOfTheDay.team_a_logo}
-                        alt={matchOfTheDay.team_a}
-                        className="w-24 h-24 object-contain"
-                      />
-                    ) : (
-                      <TeamLogo teamName={matchOfTheDay.team_a} size={96} />
-                    )}
-                    <p className="text-2xl font-black uppercase tracking-wide text-white text-center">
+                    <div className="w-28 h-28 md:w-32 md:h-32 flex items-center justify-center shrink-0">
+                      {matchOfTheDay.team_a_logo ? (
+                        <img
+                          src={matchOfTheDay.team_a_logo}
+                          alt={matchOfTheDay.team_a}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <TeamLogo teamName={matchOfTheDay.team_a} size={128} className="w-full h-full" />
+                      )}
+                    </div>
+                    <p className="text-xl md:text-2xl font-black uppercase tracking-wide text-white text-center break-words max-w-full">
                       {matchOfTheDay.team_a}
                     </p>
                   </div>
 
                   {/* VS */}
                   <div className="col-span-1 flex flex-col items-center">
-                    <span className="text-4xl font-black text-white/20">VS</span>
+                    <span className="text-3xl md:text-4xl font-black text-white/20">VS</span>
                   </div>
 
                   {/* Takım B */}
                   <div className="col-span-2 flex flex-col items-center gap-4">
-                    {matchOfTheDay.team_b_logo ? (
-                      <img
-                        src={matchOfTheDay.team_b_logo}
-                        alt={matchOfTheDay.team_b}
-                        className="w-24 h-24 object-contain"
-                      />
-                    ) : (
-                      <TeamLogo teamName={matchOfTheDay.team_b} size={96} />
-                    )}
-                    <p className="text-2xl font-black uppercase tracking-wide text-white text-center">
+                    <div className="w-28 h-28 md:w-32 md:h-32 flex items-center justify-center shrink-0">
+                      {matchOfTheDay.team_b_logo ? (
+                        <img
+                          src={matchOfTheDay.team_b_logo}
+                          alt={matchOfTheDay.team_b}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <TeamLogo teamName={matchOfTheDay.team_b} size={128} className="w-full h-full" />
+                      )}
+                    </div>
+                    <p className="text-xl md:text-2xl font-black uppercase tracking-wide text-white text-center break-words max-w-full">
                       {matchOfTheDay.team_b}
                     </p>
                   </div>

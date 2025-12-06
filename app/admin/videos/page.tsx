@@ -22,73 +22,115 @@ export default function AdminVideos() {
   ]);
 
   useEffect(() => {
-    loadVideos();
-  }, []);
-
-  const loadVideos = async () => {
-    // Timeout ekle
-    const timeoutId = setTimeout(() => {
-      console.warn("Videos load timeout - boş array gösteriliyor");
-      setVideos([
-        { title: "", thumbnailUrl: "", href: "" },
-        { title: "", thumbnailUrl: "", href: "" },
-        { title: "", thumbnailUrl: "", href: "" },
-      ]);
-      setLoading(false);
-    }, 3000);
-
-    try {
+    let isMounted = true;
+    
+    const loadVideos = async () => {
       setLoading(true);
+      
       // Kolon yoksa hata vermeden devam etmek için try-catch kullanıyoruz
       let data: any = null;
       let queryError: any = null;
 
       try {
-        const videosPromise = supabase
-          .from("site_settings")
-          .select("*")
-          .eq("id", 1)
-          .maybeSingle();
+          const { data: resultData, error: resultError } = await supabase
+            .from("site_settings")
+            .select("*")
+            .eq("id", 1)
+            .maybeSingle();
+          
+          if (!isMounted) return;
+          
+          data = resultData;
+          queryError = resultError;
 
-        const videosTimeout = new Promise((resolve) => 
-          setTimeout(() => resolve({ data: null, error: { message: "Timeout" } }), 2500)
-        );
+          // Kolon yoksa hatası (schema hatası)
+          if (resultError && (
+            resultError.message?.includes("homepage_videos") ||
+            resultError.message?.includes("column") ||
+            resultError.message?.includes("schema cache") ||
+            resultError.code === "PGRST116"
+          )) {
+            console.warn("homepage_videos kolonu henüz oluşturulmamış. Lütfen migration dosyasını çalıştırın.");
+            if (isMounted) {
+              setVideos([
+                { title: "", thumbnailUrl: "", href: "" },
+                { title: "", thumbnailUrl: "", href: "" },
+                { title: "", thumbnailUrl: "", href: "" },
+              ]);
+            }
+            return;
+          }
 
-        const result = await Promise.race([videosPromise, videosTimeout]) as any;
-        clearTimeout(timeoutId);
+          // Başka bir hata varsa
+          if (resultError) {
+            console.error("Videolar yüklenirken hata:", resultError);
+            if (isMounted) {
+              setVideos([
+                { title: "", thumbnailUrl: "", href: "" },
+                { title: "", thumbnailUrl: "", href: "" },
+                { title: "", thumbnailUrl: "", href: "" },
+              ]);
+            }
+            return;
+          }
 
-        const { data: resultData, error: resultError } = result;
-        data = resultData;
-        queryError = resultError;
+          // Data yoksa boş array ile başla
+          if (!data) {
+            if (isMounted) {
+              setVideos([
+                { title: "", thumbnailUrl: "", href: "" },
+                { title: "", thumbnailUrl: "", href: "" },
+                { title: "", thumbnailUrl: "", href: "" },
+              ]);
+            }
+            return;
+          }
 
-        // Kolon yoksa hatası (schema hatası)
-        if (resultError && (
-          resultError.message?.includes("homepage_videos") ||
-          resultError.message?.includes("column") ||
-          resultError.message?.includes("schema cache") ||
-          resultError.code === "PGRST116"
-        )) {
-          console.warn("homepage_videos kolonu henüz oluşturulmamış. Lütfen migration dosyasını çalıştırın.");
-          setVideos([
-            { title: "", thumbnailUrl: "", href: "" },
-            { title: "", thumbnailUrl: "", href: "" },
-            { title: "", thumbnailUrl: "", href: "" },
-          ]);
-          setLoading(false);
-          return;
-        }
+          let videosData: YouTubeVideo[] = [];
+          // homepage_videos kolonu varsa ve değeri varsa parse et
+          if (data && 'homepage_videos' in data && data.homepage_videos) {
+            if (typeof data.homepage_videos === 'string') {
+              try {
+                videosData = JSON.parse(data.homepage_videos);
+              } catch (e) {
+                console.error("Videolar parse hatası:", e);
+                videosData = [];
+              }
+            } else if (Array.isArray(data.homepage_videos)) {
+              videosData = data.homepage_videos;
+            }
+          }
 
-        // Timeout hatası değilse ve başka bir hata varsa
-        if (resultError && resultError.message !== "Timeout") {
-          console.error("Videolar yüklenirken hata:", resultError);
-          setVideos([
-            { title: "", thumbnailUrl: "", href: "" },
-            { title: "", thumbnailUrl: "", href: "" },
-            { title: "", thumbnailUrl: "", href: "" },
-          ]);
-          setLoading(false);
-          return;
-        }
+          if (!isMounted) return;
+
+          // Her zaman 3 slot göster (boş olsa bile)
+          if (videosData.length === 0) {
+            if (isMounted) {
+              setVideos([
+                { title: "", thumbnailUrl: "", href: "" },
+                { title: "", thumbnailUrl: "", href: "" },
+                { title: "", thumbnailUrl: "", href: "" },
+              ]);
+            }
+          } else {
+            // Thumbnail'leri otomatik doldur (eğer yoksa)
+            const processedVideos = videosData.map((video: YouTubeVideo) => {
+              if (!video.thumbnailUrl && video.href) {
+                const thumbnail = extractYouTubeThumbnail(video.href);
+                return { ...video, thumbnailUrl: thumbnail || video.thumbnailUrl };
+              }
+              return video;
+            });
+            
+            // 3'e tamamla
+            const paddedVideos = [...processedVideos];
+            while (paddedVideos.length < 3) {
+              paddedVideos.push({ title: "", thumbnailUrl: "", href: "" });
+            }
+            if (isMounted) {
+              setVideos(paddedVideos.slice(0, 3));
+            }
+          }
       } catch (err: any) {
         // Schema hatası yakala
         if (err?.message && (
@@ -97,80 +139,37 @@ export default function AdminVideos() {
           err.message.includes("schema")
         )) {
           console.warn("homepage_videos kolonu bulunamadı.");
+          if (isMounted) {
+            setVideos([
+              { title: "", thumbnailUrl: "", href: "" },
+              { title: "", thumbnailUrl: "", href: "" },
+              { title: "", thumbnailUrl: "", href: "" },
+            ]);
+          }
+          return;
+        }
+        // Diğer hatalar için
+        console.error("Videolar yüklenirken hata:", err);
+        if (isMounted) {
           setVideos([
             { title: "", thumbnailUrl: "", href: "" },
             { title: "", thumbnailUrl: "", href: "" },
             { title: "", thumbnailUrl: "", href: "" },
           ]);
+        }
+      } finally {
+        if (isMounted) {
           setLoading(false);
-          return;
-        }
-        throw err;
-      }
-
-      // Data yoksa boş array ile başla
-      if (!data) {
-        setVideos([
-          { title: "", thumbnailUrl: "", href: "" },
-          { title: "", thumbnailUrl: "", href: "" },
-          { title: "", thumbnailUrl: "", href: "" },
-        ]);
-        setLoading(false);
-        return;
-      }
-
-      let videosData: YouTubeVideo[] = [];
-      // homepage_videos kolonu varsa ve değeri varsa parse et
-      if (data && 'homepage_videos' in data && data.homepage_videos) {
-        if (typeof data.homepage_videos === 'string') {
-          try {
-            videosData = JSON.parse(data.homepage_videos);
-          } catch (e) {
-            console.error("Videolar parse hatası:", e);
-            videosData = [];
-          }
-        } else if (Array.isArray(data.homepage_videos)) {
-          videosData = data.homepage_videos;
         }
       }
-
-      // Her zaman 3 slot göster (boş olsa bile)
-      if (videosData.length === 0) {
-        setVideos([
-          { title: "", thumbnailUrl: "", href: "" },
-          { title: "", thumbnailUrl: "", href: "" },
-          { title: "", thumbnailUrl: "", href: "" },
-        ]);
-      } else {
-        // Thumbnail'leri otomatik doldur (eğer yoksa)
-        const processedVideos = videosData.map((video: YouTubeVideo) => {
-          if (!video.thumbnailUrl && video.href) {
-            const thumbnail = extractYouTubeThumbnail(video.href);
-            return { ...video, thumbnailUrl: thumbnail || video.thumbnailUrl };
-          }
-          return video;
-        });
-        
-        // 3'e tamamla
-        const paddedVideos = [...processedVideos];
-        while (paddedVideos.length < 3) {
-          paddedVideos.push({ title: "", thumbnailUrl: "", href: "" });
-        }
-        setVideos(paddedVideos.slice(0, 3));
-      }
-    } catch (error) {
-      clearTimeout(timeoutId);
-      console.error("Videolar yüklenirken hata:", error);
-      setVideos([
-        { title: "", thumbnailUrl: "", href: "" },
-        { title: "", thumbnailUrl: "", href: "" },
-        { title: "", thumbnailUrl: "", href: "" },
-      ]);
-    } finally {
-      clearTimeout(timeoutId);
-      setLoading(false);
-    }
-  };
+    };
+    
+    loadVideos();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const updateVideo = (index: number, field: keyof YouTubeVideo, value: string) => {
     const updated = [...videos];

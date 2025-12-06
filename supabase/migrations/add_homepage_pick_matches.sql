@@ -11,3 +11,7 @@ COMMENT ON COLUMN site_settings.homepage_pick_match_ids IS 'Ana sayfada PICK EM 
 
 
 
+
+
+
+

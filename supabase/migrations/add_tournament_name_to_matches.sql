@@ -20,3 +20,7 @@ COMMENT ON COLUMN matches.tournament_name IS 'Maçın turnuva/sezon ismi (direkt
 
 
 
+
+
+
+

@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import AuthModal from "@/components/auth-modal";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { getActiveSeasonId } from "@/lib/season-utils";
-import { isMatchLocked } from "@/lib/match-utils";
+import { isMatchLocked, getPredictionLockMinutes } from "@/lib/match-utils";
 
 // Veritabanı Tipleri
 interface Match {
@@ -52,30 +52,29 @@ export default function PredictionsPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [userPredictions, setUserPredictions] = useState<Map<string | number, string>>(new Map()); // matchId -> selected_team
 
-  // Verileri Çek - TÜM FİLTRELER KALDIRILDI, SADECE GÖSTER
+  // Verileri Çek
   const fetchMatches = useCallback(async () => {
-    // Agresif timeout - 2 saniye sonra loading'i kapat
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
+    let isMounted = true;
 
     setLoading(true);
     setError(null);
 
     try {
-      // TÜM MAÇLARI ÇEK - Çok kısa timeout
-      const matchesPromise = supabase
+      // TÜM MAÇLARI ÇEK - Timeout kaldırıldı
+      const { data, error } = await supabase
         .from("matches")
         .select("*")
         .order("match_date", { ascending: true })
         .order("match_time", { ascending: true });
       
-      const matchesTimeout = new Promise((resolve) => setTimeout(() => resolve({ data: [], error: null }), 1500));
-      const { data, error } = await Promise.race([matchesPromise, matchesTimeout]) as any;
+      if (!isMounted) return;
 
       if (error) {
         console.error("Veritabanı hatası:", error);
-        // Hata olsa bile devam et
+        if (isMounted) {
+          setMatches([]);
+        }
+        return;
       }
 
       // Aktif sezonu al
@@ -110,9 +109,17 @@ export default function PredictionsPage() {
         }
         
         // 2. is_display_match != true (tahminler için)
-        const isDisplayMatch = match.is_display_match === true;
+        // is_display_match === true olan maçlar SADECE maçlar sayfasında gösterilir, tahminler sayfasında ASLA gösterilmez
+        // Boolean kontrolü: true, "true", 1 gibi değerleri de kontrol et
+        const isDisplayMatch = match.is_display_match === true || 
+                                match.is_display_match === "true" || 
+                                match.is_display_match === 1;
+        
         if (isDisplayMatch) {
-          return false;
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[Predictions Filter] Maç ${match.id} (${match.team_a} vs ${match.team_b}) filtrelendi - is_display_match: ${match.is_display_match}`);
+          }
+          return false; // Maçlar sayfası için olan maçlar tahminler sayfasında gösterilmez
         }
         
         // 3. Aktif sezona ait maçlar (season_id kontrolü)
@@ -200,17 +207,26 @@ export default function PredictionsPage() {
       });
 
       // State'e Aktar
-      setMatches(matchesWithLogos || []);
+      if (isMounted) {
+        setMatches(matchesWithLogos || []);
+        console.log("Tahminler sayfası - Maçlar yüklendi:", matchesWithLogos?.length || 0);
+      }
 
     } catch (err: any) {
       console.error("Hata:", err);
-      setError(err.message || "Maçlar yüklenirken bir hata oluştu");
-      setMatches([]);
-      setLoading(false);
+      if (isMounted) {
+        setError(err.message || "Maçlar yüklenirken bir hata oluştu");
+        setMatches([]);
+      }
     } finally {
-      clearTimeout(timeoutId);
-      setLoading(false);
+      if (isMounted) {
+        setLoading(false);
+      }
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user?.id]);
 
   // Tarihe göre maçları grupla
@@ -580,12 +596,11 @@ export default function PredictionsPage() {
     // Auth state değişikliklerini dinle
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
-      // Kullanıcı giriş/çıkış yaptığında tahminleri yeniden yükle
-      if (session?.user) {
-        fetchMatches();
-      } else {
+      // Kullanıcı çıkış yaptığında tahminleri temizle
+      if (!session?.user) {
         setUserPredictions(new Map());
       }
+      // fetchMatches'i burada çağırma - useEffect'ler halledecek
     });
 
     return () => {
@@ -593,17 +608,24 @@ export default function PredictionsPage() {
     };
   }, []);
 
+  // İlk yükleme - sadece bir kez
   useEffect(() => {
-    fetchMatches();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Kullanıcı değiştiğinde tahminleri yeniden yükle
-  useEffect(() => {
-    if (user && !loading) {
+    if (!checkingAuth) {
       fetchMatches();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkingAuth]);
+
+  // Kullanıcı değiştiğinde tahminleri yeniden yükle - sadece loading false ise
+  useEffect(() => {
+    if (user && !loading && !checkingAuth) {
+      // Sadece user değiştiğinde ve loading bitmişse yeniden yükle
+      const timer = setTimeout(() => {
+        fetchMatches();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   return (

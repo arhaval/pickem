@@ -59,3 +59,7 @@ Bu dosyayı da doğrudan Supabase SQL Editor'a kopyalayıp çalıştırabilirsin
 
 
 
+
+
+
+

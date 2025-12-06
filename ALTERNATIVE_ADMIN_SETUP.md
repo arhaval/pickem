@@ -151,3 +151,7 @@ Eğer SQL çalıştıramıyorsan veya hata alıyorsan:
 
 
 
+
+
+
+

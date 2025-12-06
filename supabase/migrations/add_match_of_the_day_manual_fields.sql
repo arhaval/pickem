@@ -25,3 +25,7 @@ COMMENT ON COLUMN site_settings.match_of_the_day_tournament IS 'Günün Maçı -
 
 
 
+
+
+
+

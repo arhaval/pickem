@@ -52,3 +52,7 @@ WHERE u.email = 'yönetici@arhaval.com';
 
 
 
+
+
+
+

@@ -130,3 +130,7 @@ C: Evet, ama özel uyarı gösterilir. Puanlar korunur.
 
 
 
+
+
+
+

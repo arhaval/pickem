@@ -53,3 +53,7 @@ COMMENT ON POLICY "Allow public delete season_points" ON season_points IS 'Herke
 
 
 
+
+
+
+

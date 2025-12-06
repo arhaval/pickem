@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, Calendar, Trophy, TrendingUp, TrendingDown, CheckCircle2, BarChart3, XCircle } from "lucide-react";
+import { Clock, Calendar, Trophy, TrendingUp, TrendingDown, CheckCircle2, BarChart3, XCircle, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TeamLogo from "./team-logo";
 import { Button } from "./ui/button";
@@ -86,6 +86,34 @@ export default function PredictionMatchCard({
     onSelectTeam?.(team);
     setTimeout(() => setIsAnimating(false), 500);
   };
+
+  // Kilitlenme zamanını hesapla
+  const getLockTime = () => {
+    if (!matchDate || !matchTime) return null;
+    try {
+      const matchDateTime = new Date(`${matchDate}T${matchTime}:00`);
+      const now = new Date();
+      const diff = matchDateTime.getTime() - now.getTime();
+      
+      if (diff <= 0) return null; // Zaten kilitli
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      if (hours > 24) {
+        const days = Math.floor(hours / 24);
+        return `${days} gün sonra`;
+      } else if (hours > 0) {
+        return `${hours} saat ${minutes} dakika sonra`;
+      } else {
+        return `${minutes} dakika sonra`;
+      }
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const lockTimeText = getLockTime();
   
   return (
     <>
@@ -125,6 +153,19 @@ export default function PredictionMatchCard({
               <Clock className="h-4 w-4 text-gray-400" />
               <span className="text-sm font-semibold text-white">{matchTime}</span>
             </div>
+            {/* Kilitlenme Zamanı */}
+            {!isLocked && lockTimeText && (
+              <div className="flex items-center gap-1 text-xs text-orange-400 mt-1">
+                <Lock className="h-3 w-3" />
+                <span>Tahminler {lockTimeText} kilitlenecek</span>
+              </div>
+            )}
+            {isLocked && (
+              <div className="flex items-center gap-1 text-xs text-red-400 mt-1">
+                <Lock className="h-3 w-3" />
+                <span>Tahminler kilitlendi</span>
+              </div>
+            )}
             {/* Kazanan Bildirimi */}
             {winner && (
               <div className={cn(

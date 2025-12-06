@@ -54,3 +54,7 @@ SELECT COUNT(*) FROM predictions WHERE user_id::text = auth.uid()::text;
 
 
 
+
+
+
+

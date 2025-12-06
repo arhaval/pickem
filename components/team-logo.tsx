@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { memo } from "react";
 
 interface TeamLogoProps {
   teamName: string;
@@ -12,7 +13,7 @@ interface TeamLogoProps {
 // Fallback logo - logo URL yoksa veya yüklenemezse kullanılacak
 const fallbackLogo = "/teams/aurora.png";
 
-export default function TeamLogo({ teamName, logoUrl, size = 64, className = "" }: TeamLogoProps) {
+function TeamLogo({ teamName, logoUrl, size = 64, className = "" }: TeamLogoProps) {
   // Logo URL varsa ve boş değilse kullan, yoksa fallback logo kullan
   const logoPath = (logoUrl && logoUrl.trim() !== "") ? logoUrl : fallbackLogo;
   
@@ -45,8 +46,9 @@ export default function TeamLogo({ teamName, logoUrl, size = 64, className = "" 
         width={imageSize}
         height={imageSize}
         className="object-contain w-full h-full p-1"
-        quality={95}
+        quality={80}
         priority={false}
+        loading="lazy"
         unoptimized={logoPath?.startsWith('http') || logoPath?.startsWith('https')}
         onError={(e) => {
           // Logo yüklenemezse fallback logo'ya geç
@@ -80,4 +82,7 @@ export default function TeamLogo({ teamName, logoUrl, size = 64, className = "" 
     </div>
   );
 }
+
+// Memoize edilmiş component - performans için
+export default memo(TeamLogo);
 

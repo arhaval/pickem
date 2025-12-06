@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Target, Home, Trophy, Radio, User, LogIn, UserPlus, Calendar } from "lucide-react";
+import { Target, Home, Trophy, User, LogIn, UserPlus, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/supabase/client";
@@ -39,7 +39,6 @@ const navigation = [
 export default function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [hasActiveLive, setHasActiveLive] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -130,35 +129,7 @@ export default function Navbar() {
     };
   }, [user]);
 
-  useEffect(() => {
-    // Aktif yayın kontrolü
-    const checkActiveLive = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("live_lobbies")
-          .select("id")
-          .eq("is_active", true)
-          .limit(1)
-          .maybeSingle();
-
-        if (!error && data) {
-          setHasActiveLive(true);
-        } else {
-          setHasActiveLive(false);
-        }
-      } catch (error) {
-        console.error("Error checking active live:", error);
-        setHasActiveLive(false);
-      }
-    };
-
-    checkActiveLive();
-
-    // 30 saniyede bir kontrol et (real-time için)
-    const interval = setInterval(checkActiveLive, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
+  // Live lobiler sitede gözükmeyecek, sadece link ile erişilebilir
 
   return (
     <>
@@ -202,24 +173,8 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Sağ taraf - Canlı Yayın Butonu (Koşullu) ve Kullanıcı Menüsü */}
+        {/* Sağ taraf - Kullanıcı Menüsü */}
         <div className="flex items-center gap-3">
-          {/* Canlı Yayın Butonu - Sadece aktif yayın varsa görünür */}
-          {hasActiveLive && (
-            <Link
-              href="/live"
-              className="group relative flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-white text-sm font-bold uppercase tracking-wide hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg shadow-red-600/50 animate-pulse"
-            >
-              <div className="relative">
-                <Radio className="h-4 w-4" />
-                <span className="absolute inset-0 animate-ping">
-                  <Radio className="h-4 w-4 opacity-50" />
-                </span>
-              </div>
-              <span>CANLI YAYIN</span>
-            </Link>
-          )}
-
           {/* Desktop - Giriş Yap / Profil */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
@@ -309,23 +264,6 @@ export default function Navbar() {
                 </Link>
               );
             })}
-
-            {/* Mobilde Canlı Yayın Butonu */}
-            {hasActiveLive && (
-              <Link
-                href="/live"
-                onClick={() => setIsMenuOpen(false)}
-                className="group relative flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold uppercase tracking-wide hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg shadow-red-600/50 animate-pulse"
-              >
-                <div className="relative">
-                  <Radio className="h-5 w-5" />
-                  <span className="absolute inset-0 animate-ping">
-                    <Radio className="h-5 w-5 opacity-50" />
-                  </span>
-                </div>
-                <span>CANLI YAYIN</span>
-              </Link>
-            )}
 
             <div className="pt-3 border-t border-white/5 mt-3 space-y-2">
               {user ? (

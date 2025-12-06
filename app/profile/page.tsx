@@ -666,167 +666,170 @@ export default function ProfilePage() {
       />
 
       <div className="container mx-auto px-4 py-4 max-w-6xl">
-        {/* Profil Kartı - Basit ve Temiz */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#131720] via-[#1a1f2e] to-[#0f172a] rounded-xl border border-white/10 p-4 md:p-6 mb-4 shadow-xl">
+        {/* Profil Kartı - Yatay Düzen */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#131720] via-[#1a1f2e] to-[#0f172a] rounded-xl border border-white/10 p-5 md:p-6 mb-4 shadow-xl">
           {/* Arka plan efekti */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#B84DC7]/5 via-transparent to-[#D69ADE]/5"></div>
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#B84DC7]/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#D69ADE]/10 rounded-full blur-3xl"></div>
           
-          <div className="relative z-10 flex flex-col items-center gap-3">
-            {/* Avatar - Merkezde */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#B84DC7] to-[#D69ADE] rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+          <div className="relative z-10 flex items-start gap-5 md:gap-6">
+            {/* Avatar - Sol */}
+            <div className="relative group flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#B84DC7] to-[#D69ADE] rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
                   alt={profile.username || "Kullanıcı"}
-                  className="relative w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-[#B84DC7] shadow-xl shadow-[#B84DC7]/40 ring-2 ring-[#B84DC7]/20 transition-transform group-hover:scale-105"
+                  className="relative w-24 h-24 md:w-28 md:h-28 rounded-xl object-cover border-2 border-[#B84DC7] shadow-xl shadow-[#B84DC7]/40 ring-2 ring-[#B84DC7]/20 transition-transform group-hover:scale-105"
                 />
               ) : (
-                <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-[#B84DC7] to-[#D69ADE] border-2 border-[#B84DC7] flex items-center justify-center shadow-xl shadow-[#B84DC7]/40 ring-2 ring-[#B84DC7]/20 transition-transform group-hover:scale-105">
-                  <Users className="h-10 w-10 md:h-12 md:w-12 text-white" />
+                <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-xl bg-gradient-to-br from-[#B84DC7] to-[#D69ADE] border-2 border-[#B84DC7] flex items-center justify-center shadow-xl shadow-[#B84DC7]/40 ring-2 ring-[#B84DC7]/20 transition-transform group-hover:scale-105">
+                  <Users className="h-12 w-12 md:h-14 md:w-14 text-white" />
                 </div>
               )}
             </div>
             
-            {/* Kullanıcı Adı */}
-            <div className="text-center">
-              <h1 className="text-2xl md:text-3xl font-black text-white mb-1 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                {profile.username || "İsimsiz Kullanıcı"}
-              </h1>
-              {profile.created_at && (
-                <p className="text-sm text-gray-400 flex items-center justify-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Üyelik: {new Date(profile.created_at).toLocaleDateString('tr-TR', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </p>
+            {/* Bilgiler - Sağ */}
+            <div className="flex-1 min-w-0">
+              {/* Kullanıcı Adı ve Üyelik */}
+              <div className="mb-4">
+                <h1 className="text-2xl md:text-3xl font-black text-white mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  {profile.username || "İsimsiz Kullanıcı"}
+                </h1>
+                {profile.created_at && (
+                  <p className="text-sm text-gray-400 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Üyelik: {new Date(profile.created_at).toLocaleDateString('tr-TR', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </p>
+                )}
+              </div>
+
+              {/* Sosyal Medya İkonları - Kompakt */}
+              {(profile.instagram_url || profile.twitter_url || profile.youtube_url || profile.twitch_url || profile.tiktok_url || profile.steam_id) && (
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                  {profile.instagram_url && (
+                    <a
+                      href={profile.instagram_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
+                    >
+                      <Instagram className="h-4 w-4" />
+                    </a>
+                  )}
+                  {profile.twitter_url && (
+                    <a
+                      href={profile.twitter_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
+                    >
+                      <Twitter className="h-4 w-4" />
+                    </a>
+                  )}
+                  {profile.youtube_url && (
+                    <a
+                      href={profile.youtube_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-red-600 hover:bg-red-700 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
+                    >
+                      <Youtube className="h-4 w-4" />
+                    </a>
+                  )}
+                  {profile.twitch_url && (
+                    <a
+                      href={profile.twitch_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-purple-600 hover:bg-purple-700 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
+                    >
+                      <Twitch className="h-4 w-4" />
+                    </a>
+                  )}
+                  {profile.tiktok_url && (
+                    <a
+                      href={profile.tiktok_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-black hover:bg-gray-900 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
+                    >
+                      <Music className="h-4 w-4" />
+                    </a>
+                  )}
+                  {profile.steam_id && (
+                    <a
+                      href={`https://steamcommunity.com/profiles/${profile.steam_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Düzenle Butonu */}
+              {isOwnProfile && (
+                <Button
+                  onClick={() => router.push("/settings")}
+                  variant="outline"
+                  size="sm"
+                  className="border-[#B84DC7]/50 text-[#B84DC7] hover:bg-[#B84DC7]/20 hover:border-[#B84DC7] hover:scale-105 transition-all shadow-md"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Düzenle
+                </Button>
               )}
             </div>
+          </div>
 
-            {/* Aktif Sezon Puanları - Doğrudan Profil Kartında */}
-            {(isOwnProfile || viewingUserId) && (
-              <div className="mt-2 w-full max-w-md">
-                <div className="relative overflow-hidden rounded-xl border border-[#B84DC7]/30 bg-gradient-to-br from-[#B84DC7]/10 to-[#D69ADE]/5 p-4">
-                  {/* Arka plan efekti */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#B84DC7]/5 via-transparent to-[#D69ADE]/5"></div>
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#B84DC7]/20 rounded-full blur-2xl"></div>
-                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#D69ADE]/20 rounded-full blur-2xl"></div>
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Trophy className="h-5 w-5 text-[#B84DC7]" />
-                        <span className="text-sm font-semibold text-gray-300">Sezon Puanı</span>
-                      </div>
-                      {pointsChange !== null && pointsChange !== 0 && (
-                        <span
-                          className={cn(
-                            "text-xs font-bold px-2 py-1 rounded-full animate-pulse",
-                            pointsChange > 0
-                              ? "text-green-400 bg-green-500/20"
-                              : "text-red-400 bg-red-500/20"
-                          )}
-                        >
-                          {pointsChange > 0 ? "+" : ""}{pointsChange.toLocaleString()}
-                        </span>
-                      )}
+          {/* Aktif Sezon Puanları - Profil Kartının Altında */}
+          {(isOwnProfile || viewingUserId) && (
+            <div className="mt-4">
+              <div className="relative overflow-hidden rounded-xl border border-[#B84DC7]/30 bg-gradient-to-br from-[#B84DC7]/10 to-[#D69ADE]/5 p-4">
+                {/* Arka plan efekti */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#B84DC7]/5 via-transparent to-[#D69ADE]/5"></div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[#B84DC7]/20 rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#D69ADE]/20 rounded-full blur-2xl"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="h-5 w-5 text-[#B84DC7]" />
+                      <span className="text-sm font-semibold text-gray-300">Sezon Puanı</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-black text-white">
-                          {currentPoints.toLocaleString()}
-                        </span>
-                        <span className="text-sm text-gray-400">puan</span>
-                      </div>
+                    {pointsChange !== null && pointsChange !== 0 && (
+                      <span
+                        className={cn(
+                          "text-xs font-bold px-2 py-1 rounded-full animate-pulse",
+                          pointsChange > 0
+                            ? "text-green-400 bg-green-500/20"
+                            : "text-red-400 bg-red-500/20"
+                        )}
+                      >
+                        {pointsChange > 0 ? "+" : ""}{pointsChange.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-black text-white">
+                        {currentPoints.toLocaleString()}
+                      </span>
+                      <span className="text-sm text-gray-400">puan</span>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* Düzenle Butonu */}
-            {isOwnProfile && (
-              <Button
-                onClick={() => router.push("/settings")}
-                variant="outline"
-                size="sm"
-                className="border-[#B84DC7]/50 text-[#B84DC7] hover:bg-[#B84DC7]/20 hover:border-[#B84DC7] hover:scale-105 transition-all shadow-md"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Düzenle
-              </Button>
-            )}
-
-            {/* Sosyal Medya İkonları - Kompakt */}
-            {(profile.instagram_url || profile.twitter_url || profile.youtube_url || profile.twitch_url || profile.tiktok_url || profile.steam_id) && (
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
-                {profile.instagram_url && (
-                  <a
-                    href={profile.instagram_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
-                  >
-                    <Instagram className="h-5 w-5" />
-                  </a>
-                )}
-                {profile.twitter_url && (
-                  <a
-                    href={profile.twitter_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
-                  >
-                    <Twitter className="h-5 w-5" />
-                  </a>
-                )}
-                {profile.youtube_url && (
-                  <a
-                    href={profile.youtube_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
-                  >
-                    <Youtube className="h-5 w-5" />
-                  </a>
-                )}
-                {profile.twitch_url && (
-                  <a
-                    href={profile.twitch_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
-                  >
-                    <Twitch className="h-5 w-5" />
-                  </a>
-                )}
-                {profile.tiktok_url && (
-                  <a
-                    href={profile.tiktok_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-black hover:bg-gray-900 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
-                  >
-                    <Music className="h-5 w-5" />
-                  </a>
-                )}
-                {profile.steam_id && (
-                  <a
-                    href={`https://steamcommunity.com/profiles/${profile.steam_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-all hover:scale-110 shadow-md"
-                  >
-                    <ExternalLink className="h-5 w-5" />
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Kullanıcının Tahminleri - Sadece kendi profili görüntüleniyorsa göster */}

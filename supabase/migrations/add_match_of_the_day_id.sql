@@ -11,3 +11,7 @@ CREATE INDEX IF NOT EXISTS idx_site_settings_match_of_the_day_id ON site_setting
 
 
 
+
+
+
+

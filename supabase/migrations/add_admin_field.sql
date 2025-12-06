@@ -22,3 +22,7 @@ COMMENT ON COLUMN profiles.is_admin IS 'Kullanıcının admin yetkisi olup olmad
 
 
 
+
+
+
+

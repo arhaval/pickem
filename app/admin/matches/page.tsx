@@ -90,11 +90,7 @@ export default function AdminMatches() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingMatchId, setEditingMatchId] = useState<string | null>(null);
 
-  // Takımları ve maçları yükle
-  useEffect(() => {
-    loadData();
-  }, [showArchived]);
-
+  // Verileri yükleyen fonksiyon
   const loadData = async () => {
     try {
       setLoading(true);
@@ -108,12 +104,11 @@ export default function AdminMatches() {
 
       if (teamsError) {
         console.error("Takımlar yüklenirken hata:", JSON.stringify(teamsError, null, 2));
-        alert(teamsError.message || "Takımlar yüklenirken bir hata oluştu.");
-        setLoading(false);
-        return;
+        setTeams([]);
+      } else {
+        setTeams(teamsData || []);
+        console.log("Takımlar yüklendi:", teamsData?.length || 0);
       }
-      setTeams(teamsData || []);
-      console.log("Takımlar yüklendi:", teamsData?.length || 0);
 
       // Sezonları yükle
       const { data: seasonsData, error: seasonsError } = await supabase
@@ -123,29 +118,24 @@ export default function AdminMatches() {
 
       if (seasonsError) {
         console.error("Sezonlar yüklenirken hata:", seasonsError);
+        setSeasons([]);
       } else {
         setSeasons((seasonsData as any) || []);
-        // Aktif sezon varsa varsayılan olarak seç
         const activeSeason = (seasonsData as any)?.find((s: any) => s.is_active);
         if (activeSeason && !formData.season_id) {
           setFormData((prev) => ({ ...prev, season_id: activeSeason.id }));
         }
       }
 
-      // Maçları yükle - match_date ile sıralama (tüm kolonları çek)
+      // Maçları yükle
       let query = supabase
         .from("matches")
         .select("*");
       
-      // is_archived kolonu varsa filtrele, yoksa tüm maçları göster
       if (showArchived) {
-        // Arşivlenmiş maçları göster
         query = query.eq("is_archived", true);
-        console.log("Arşivlenmiş maçlar yükleniyor...");
       } else {
-        // Aktif maçları göster (is_archived = false veya null)
         query = query.or("is_archived.eq.false,is_archived.is.null");
-        console.log("Aktif maçlar yükleniyor...");
       }
       
       const { data: matchesData, error: matchesError } = await query
@@ -154,37 +144,115 @@ export default function AdminMatches() {
 
       if (matchesError) {
         console.error("Maçlar yüklenirken hata:", JSON.stringify(matchesError, null, 2));
-        alert("Maçlar yüklenirken bir hata oluştu: " + matchesError.message);
-        setLoading(false);
-        return;
+        setMatches([]);
+      } else {
+        setMatches(matchesData || []);
+        console.log("Maçlar yüklendi:", matchesData?.length || 0);
       }
-      
-      // Admin panelinde TÜM maçları göster (filtreleme yok)
-      // Admin gizli maçları da görebilmeli
-      const filteredMatches = matchesData || [];
-      
-      console.log("=== FİKSTÜR VE SONUÇLAR - MAÇ YÜKLEME ===");
-      console.log("Toplam maç (veritabanından):", matchesData?.length || 0);
-      console.log("Filtrelenmiş maç (tahminler için):", filteredMatches.length);
-      console.log("Filtrelenen maçlar:", filteredMatches.map((m: any) => ({ 
-        id: m.id, 
-        team_a: m.team_a, 
-        team_b: m.team_b, 
-        match_date: m.match_date,
-        is_display_match: m.is_display_match,
-        is_archived: m.is_archived,
-        winner: m.winner
-      })));
-      // State'i güncelle
-      setMatches(filteredMatches);
-      console.log("State güncellendi, matches sayısı:", filteredMatches.length);
     } catch (error: any) {
-      console.error("Veri yüklenirken hata:", JSON.stringify(error, null, 2));
-      alert("Veri yüklenirken bir hata oluştu: " + (error?.message || "Bilinmeyen hata"));
+      console.error("Beklenmeyen hata:", error);
+      setMatches([]);
+      setTeams([]);
+      setSeasons([]);
     } finally {
       setLoading(false);
     }
   };
+
+  // Takımları ve maçları yükle
+  useEffect(() => {
+    let isMounted = true;
+    
+    const loadDataWithCleanup = async () => {
+      try {
+        setLoading(true);
+        console.log("Maçlar yükleniyor...");
+        
+        // Takımları yükle
+        const { data: teamsData, error: teamsError } = await supabase
+          .from("teams")
+          .select("*")
+          .order("name", { ascending: true });
+
+        if (!isMounted) return;
+
+        if (teamsError) {
+          console.error("Takımlar yüklenirken hata:", JSON.stringify(teamsError, null, 2));
+          if (isMounted) setTeams([]);
+        } else {
+          if (isMounted) {
+            setTeams(teamsData || []);
+            console.log("Takımlar yüklendi:", teamsData?.length || 0);
+          }
+        }
+
+        // Sezonları yükle
+        const { data: seasonsData, error: seasonsError } = await supabase
+          .from("seasons")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (!isMounted) return;
+
+        if (seasonsError) {
+          console.error("Sezonlar yüklenirken hata:", seasonsError);
+          if (isMounted) setSeasons([]);
+        } else {
+          if (isMounted) {
+            setSeasons((seasonsData as any) || []);
+            const activeSeason = (seasonsData as any)?.find((s: any) => s.is_active);
+            if (activeSeason && !formData.season_id) {
+              setFormData((prev) => ({ ...prev, season_id: activeSeason.id }));
+            }
+          }
+        }
+
+        // Maçları yükle
+        let query = supabase
+          .from("matches")
+          .select("*");
+        
+        if (showArchived) {
+          query = query.eq("is_archived", true);
+        } else {
+          query = query.or("is_archived.eq.false,is_archived.is.null");
+        }
+        
+        const { data: matchesData, error: matchesError } = await query
+          .order("match_date", { ascending: false, nullsFirst: false })
+          .order("match_time", { ascending: false, nullsFirst: false });
+
+        if (!isMounted) return;
+
+        if (matchesError) {
+          console.error("Maçlar yüklenirken hata:", JSON.stringify(matchesError, null, 2));
+          if (isMounted) setMatches([]);
+        } else {
+          if (isMounted) {
+            setMatches(matchesData || []);
+            console.log("Maçlar yüklendi:", matchesData?.length || 0);
+          }
+        }
+      } catch (error: any) {
+        console.error("Beklenmeyen hata:", error);
+        if (isMounted) {
+          setMatches([]);
+          setTeams([]);
+          setSeasons([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+    
+    loadDataWithCleanup();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [showArchived]);
 
   // Takım bilgilerini al
   const getTeamById = (teamId: string) => {
@@ -654,6 +722,8 @@ export default function AdminMatches() {
 
       // Maçın sezon ID'sini al
       const seasonId = selectedMatch.season_id;
+      // Maçın lobi ID'sini kontrol et
+      const liveLobbyId = (selectedMatch as any).live_lobby_id;
 
       // Doğru bilenlere puan ver
       for (const prediction of (correctPredictions as any)) {
@@ -663,6 +733,19 @@ export default function AdminMatches() {
           pointsToAdd = selectedMatch.difficulty_score_a;
         } else if (selectedResult === "B" || selectedResult === "UNDER") {
           pointsToAdd = selectedMatch.difficulty_score_b;
+        }
+
+        // Eğer maç bir lobiye bağlıysa, sezon puanlarına ekleme
+        if (liveLobbyId) {
+          console.log(`Maç lobiye bağlı (live_lobby_id: ${liveLobbyId}). Sezon puanlarına eklenmeyecek.`);
+          // Sadece tahmin kaydını güncelle, sezon puanlarına ekleme
+          await (supabase as any)
+            .from("predictions")
+            .update({
+              points_earned: pointsToAdd,
+            })
+            .eq("id", prediction.id);
+          continue; // Sezon puanlarına ekleme, bir sonraki tahmine geç
         }
 
         // Sezon bazlı puanları güncelle (Sadece tahminler için olan maçlarda sezon zorunlu)
@@ -726,6 +809,19 @@ export default function AdminMatches() {
 
       // Yanlış bilenleri işaretle
       for (const prediction of (incorrectPredictions as any)) {
+        // Eğer maç bir lobiye bağlıysa, sezon puanlarına ekleme
+        if (liveLobbyId) {
+          console.log(`Maç lobiye bağlı (live_lobby_id: ${liveLobbyId}). Sezon puanlarına eklenmeyecek.`);
+          // Sadece tahmin kaydını güncelle, sezon puanlarına ekleme
+          await (supabase as any)
+            .from("predictions")
+            .update({
+              points_earned: 0,
+            })
+            .eq("id", prediction.id);
+          continue; // Sezon puanlarına ekleme, bir sonraki tahmine geç
+        }
+
         // Sezon bazlı puanları güncelle - sadece toplam tahmin sayısını artır
         // Sadece tahminler için olan maçlarda sezon kontrolü yap
         if (!seasonId) {
@@ -774,9 +870,16 @@ export default function AdminMatches() {
           .eq("id", prediction.id);
       }
 
-      alert(
-        `Sonuç kaydedildi! ${correctPredictions.length} kullanıcı doğru bildi ve puan kazandı. ${incorrectPredictions.length} kullanıcı yanlış bildi.\n\nKazanan tahminler sayfasında gösterilecek. Maçı istediğiniz zaman arşivleyebilirsiniz.`
-      );
+      // Alert mesajını hazırla
+      let alertMessage = `Sonuç kaydedildi! ${correctPredictions.length} kullanıcı doğru bildi ve puan kazandı. ${incorrectPredictions.length} kullanıcı yanlış bildi.\n\n`;
+      
+      if (liveLobbyId) {
+        alertMessage += `⚠️ Bu maç bir lobiye bağlı olduğu için kazanılan puanlar sezon puanlarına eklenmedi.\n\n`;
+      }
+      
+      alertMessage += `Kazanan tahminler sayfasında gösterilecek. Maçı istediğiniz zaman arşivleyebilirsiniz.`;
+      
+      alert(alertMessage);
 
       setIsResultDialogOpen(false);
       setSelectedMatch(null);
@@ -798,10 +901,10 @@ export default function AdminMatches() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Fikstür ve Sonuçlar
+            Tahminler
           </h1>
           <p className="text-gray-400">
-            Maç fikstürlerini yönetin ve sonuçları güncelleyin.
+            Tahmin maçlarını yönetin ve sonuçları güncelleyin.
           </p>
         </div>
         <div className="flex items-center gap-3">
