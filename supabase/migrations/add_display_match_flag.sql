@@ -15,3 +15,4 @@ COMMENT ON COLUMN matches.is_display_match IS 'true ise sadece maçlar sayfasın
 
 
 
+

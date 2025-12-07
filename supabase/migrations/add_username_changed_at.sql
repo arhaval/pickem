@@ -12,3 +12,4 @@ COMMENT ON COLUMN profiles.username_changed_at IS 'Kullanıcı adının en son d
 
 
 
+

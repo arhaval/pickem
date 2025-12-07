@@ -33,3 +33,4 @@ Tüm tip uyumsuzlukları düzeltildi. SQL hatasız çalışacaktır.
 
 
 
+

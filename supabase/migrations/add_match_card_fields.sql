@@ -31,3 +31,4 @@ COMMENT ON COLUMN matches.maps IS 'Harita bilgileri (JSON: [{"name": "...", "sco
 
 
 
+

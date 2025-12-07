@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Trophy, Calendar, Clock, Edit, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Trophy, Calendar, Clock, Edit, AlertTriangle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -56,6 +56,7 @@ interface Match {
   stream_links?: string | null;
   score_a?: number | null;
   score_b?: number | null;
+  prediction_lock_minutes_before_match?: number | null;
   created_at: string;
 }
 
@@ -86,6 +87,7 @@ export default function AdminMatches() {
     question_text: "",
     analysis_note: "",
     is_display_match: false, // Varsayılan olarak false (tahminler sayfasında göster)
+    prediction_lock_minutes_before_match: null, // NULL = genel ayarı kullan
   });
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingMatchId, setEditingMatchId] = useState<string | null>(null);
@@ -272,10 +274,11 @@ export default function AdminMatches() {
       difficulty_score_a: "3",
       difficulty_score_b: "5",
       prediction_type: "winner",
-      question_text: "",
-      analysis_note: "",
-      is_display_match: false, // Varsayılan olarak false (tahminler sayfasında göster)
-    });
+    question_text: "",
+    analysis_note: "",
+    is_display_match: false, // Varsayılan olarak false (tahminler sayfasında göster)
+    prediction_lock_minutes_before_match: null, // NULL = genel ayarı kullan
+  });
   };
 
   // Maç düzenle
@@ -296,6 +299,7 @@ export default function AdminMatches() {
       question_text: match.question_text || "",
       analysis_note: match.analysis_note || "",
       is_display_match: (match as any).is_display_match !== false, // false değilse true (null veya true)
+      prediction_lock_minutes_before_match: (match as any).prediction_lock_minutes_before_match ?? null,
     } as any);
     
     setIsEditMode(true);
@@ -356,6 +360,11 @@ export default function AdminMatches() {
         question_text: formData.question_text || null,
         analysis_note: formData.analysis_note || null,
         is_display_match: formData.is_display_match, // Form'dan gelen değer (varsayılan: true)
+        prediction_lock_minutes_before_match: formData.prediction_lock_minutes_before_match !== null && formData.prediction_lock_minutes_before_match !== "" 
+          ? (typeof formData.prediction_lock_minutes_before_match === 'number' 
+              ? formData.prediction_lock_minutes_before_match 
+              : parseInt(String(formData.prediction_lock_minutes_before_match)) || 0)
+          : null,
       };
       
       console.log("=== MAÇ EKLEME/DÜZENLEME ===");
@@ -1247,6 +1256,37 @@ export default function AdminMatches() {
                   Bu not kullanıcılara tahmin kartında gösterilir
                 </p>
               </div>
+
+              {/* Kilitleme Saati */}
+              <div>
+                <label className="text-sm font-medium text-white mb-2 block">
+                  <Lock className="h-4 w-4 inline mr-1" />
+                  Tahmin Kilitleme Saati (Opsiyonel)
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="120"
+                  value={formData.prediction_lock_minutes_before_match ?? ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      prediction_lock_minutes_before_match: e.target.value === "" ? null : (parseInt(e.target.value) || 0) as number | null,
+                    } as any)
+                  }
+                  placeholder="Boş bırak = Genel ayarı kullan"
+                  className="bg-white/5 border-white/20 text-white"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  {formData.prediction_lock_minutes_before_match === null || formData.prediction_lock_minutes_before_match === ""
+                    ? "Genel ayar kullanılacak (Ayarlar sayfasından belirlenir)"
+                    : formData.prediction_lock_minutes_before_match === 0
+                    ? "Tahminler maç saati kilitlenecek"
+                    : formData.prediction_lock_minutes_before_match === 1
+                    ? "Tahminler maçtan 1 dakika önce kilitlenecek"
+                    : `Tahminler maçtan ${formData.prediction_lock_minutes_before_match} dakika önce kilitlenecek`}
+                </p>
+              </div>
             </div>
             <DialogFooter>
               <Button
@@ -1346,6 +1386,14 @@ export default function AdminMatches() {
                         {match.tournament_name && (
                           <div className="text-xs text-[#B84DC7] mt-1 font-medium">
                             {match.tournament_name}
+                          </div>
+                        )}
+                        {(match as any).prediction_lock_minutes_before_match !== null && (match as any).prediction_lock_minutes_before_match !== undefined && (
+                          <div className="text-xs text-yellow-400 mt-1 flex items-center gap-1">
+                            <Lock className="h-3 w-3" />
+                            {(match as any).prediction_lock_minutes_before_match === 0
+                              ? "Maç saati kilitlenir"
+                              : `${(match as any).prediction_lock_minutes_before_match} dk önce kilitlenir`}
                           </div>
                         )}
                       </td>

@@ -35,6 +35,7 @@ interface Match {
   option_b_label?: string;
   question_text?: string | null;
   analysis_note?: string | null;
+  prediction_lock_minutes_before_match?: number | null;
 }
 
 export default function PredictionsPage() {
@@ -267,7 +268,12 @@ export default function PredictionsPage() {
     const match = matches.find((m) => m.id.toString() === matchId.toString());
     
     // Maç başladı mı kontrol et
-    if (match && isMatchLocked(match.match_date, match.match_time, match.winner)) {
+    if (match && isMatchLocked(
+      match.match_date, 
+      match.match_time, 
+      match.winner,
+      match.prediction_lock_minutes_before_match ?? undefined
+    )) {
       alert("Bu maç başladı! Artık tahmin yapamazsınız.");
       return;
     }
@@ -379,7 +385,12 @@ export default function PredictionsPage() {
           const match = matches.find((m) => m.id.toString() === matchId.toString());
           
           // Maç başladı mı kontrol et
-          if (match && isMatchLocked(match.match_date, match.match_time, match.winner)) {
+          if (match && isMatchLocked(
+      match.match_date, 
+      match.match_time, 
+      match.winner,
+      match.prediction_lock_minutes_before_match ?? undefined
+    )) {
             console.warn(`Match ${matchId} başlamış, tahmin yapılamaz!`);
             return null;
           }

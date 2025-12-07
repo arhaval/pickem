@@ -8,3 +8,4 @@ ADD COLUMN IF NOT EXISTS banner_image_url TEXT;
 COMMENT ON COLUMN live_questions.banner_image_url IS 'Soru banner görseli URL';
 
 
+

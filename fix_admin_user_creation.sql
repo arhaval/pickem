@@ -73,3 +73,4 @@ WHERE p.id = 'KULLANICI_ID_BURAYA';
 
 
 
+

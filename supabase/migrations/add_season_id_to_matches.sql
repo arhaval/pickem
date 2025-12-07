@@ -23,3 +23,4 @@ COMMENT ON COLUMN matches.season_id IS 'Maçın ait olduğu sezon ID (BIGINT) - 
 
 
 
+

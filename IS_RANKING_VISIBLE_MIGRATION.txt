@@ -19,3 +19,4 @@ WHERE is_ranking_visible IS NULL;
 
 
 
+

@@ -142,3 +142,4 @@ Eğer hala "new row violates row-level security policy" hatası alıyorsanız:
 
 
 
+

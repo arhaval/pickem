@@ -13,3 +13,4 @@ ON live_question_answers(question_id, is_winner)
 WHERE is_winner = TRUE;
 
 
+

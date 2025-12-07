@@ -22,3 +22,4 @@ COMMENT ON COLUMN site_settings.match_of_the_day_team_b_logo IS 'Günün Maçı 
 
 
 
+

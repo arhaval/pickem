@@ -53,3 +53,4 @@ COMMENT ON COLUMN season_points.total_predictions IS 'Toplam tahmin sayısı';
 
 
 
+

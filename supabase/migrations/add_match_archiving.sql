@@ -24,3 +24,4 @@ COMMENT ON COLUMN matches.is_archived IS 'Maçın arşivlenip arşivlenmediğini
 
 
 
+

@@ -25,3 +25,4 @@ WHERE id = 'BURAYA_KULLANICI_ID_GIR'; -- Kendi kullanıcı ID'ni buraya yaz
 
 
 
+

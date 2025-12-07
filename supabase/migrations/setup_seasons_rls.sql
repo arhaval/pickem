@@ -57,3 +57,4 @@ COMMENT ON POLICY "Allow public delete seasons" ON seasons IS 'Herkes sezon sile
 
 
 
+
