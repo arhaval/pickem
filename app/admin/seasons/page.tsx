@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Calendar, Trophy, CheckCircle2, XCircle, Award, RotateCcw, Medal } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Trophy, CheckCircle2, XCircle, Award, RotateCcw, Medal, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,6 +36,8 @@ export default function AdminSeasons() {
   const [endingSeason, setEndingSeason] = useState<Season | null>(null);
   const [seasonLeaderboard, setSeasonLeaderboard] = useState<any[]>([]);
   const [isEndingSeason, setIsEndingSeason] = useState(false);
+  const [isViewLeaderboardDialogOpen, setIsViewLeaderboardDialogOpen] = useState(false);
+  const [viewingSeason, setViewingSeason] = useState<Season | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     start_date: "",
@@ -218,22 +221,19 @@ export default function AdminSeasons() {
     return seasons.find((s) => s.is_active);
   };
 
-  const handleEndSeason = async (season: Season) => {
-    setEndingSeason(season);
-    setIsEndSeasonDialogOpen(true);
-
-    // Sezon liderlik tablosunu yükle
+  const loadSeasonLeaderboard = async (seasonId: string) => {
     try {
       const { data, error } = await supabase
         .from("season_points")
         .select(`
           *,
           profiles:user_id (
+            id,
             username,
             avatar_url
           )
         `)
-        .eq("season_id", season.id)
+        .eq("season_id", seasonId)
         .order("total_points", { ascending: false })
         .order("correct_predictions", { ascending: false })
         .limit(100);
@@ -241,18 +241,37 @@ export default function AdminSeasons() {
       if (error) {
         console.error("Liderlik tablosu yüklenirken hata:", error);
         alert("Liderlik tablosu yüklenirken bir hata oluştu.");
-        return;
+        return [];
       }
 
       const formattedData = (data || []).map((item: any) => ({
         ...item,
-        profiles: item.profiles || { username: null, avatar_url: null },
+        profiles: item.profiles || { id: null, username: null, avatar_url: null },
       }));
 
-      setSeasonLeaderboard(formattedData);
+      return formattedData;
     } catch (error) {
       console.error("Beklenmeyen hata:", error);
+      return [];
     }
+  };
+
+  const handleViewLeaderboard = async (season: Season) => {
+    setViewingSeason(season);
+    setIsViewLeaderboardDialogOpen(true);
+
+    // Sezon liderlik tablosunu yükle
+    const leaderboard = await loadSeasonLeaderboard(season.id);
+    setSeasonLeaderboard(leaderboard);
+  };
+
+  const handleEndSeason = async (season: Season) => {
+    setEndingSeason(season);
+    setIsEndSeasonDialogOpen(true);
+
+    // Sezon liderlik tablosunu yükle
+    const leaderboard = await loadSeasonLeaderboard(season.id);
+    setSeasonLeaderboard(leaderboard);
   };
 
   const confirmEndSeason = async () => {
@@ -393,6 +412,15 @@ export default function AdminSeasons() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewLeaderboard(season)}
+                          className="text-purple-400 hover:text-purple-300"
+                          title="Sezon Sıralamasını Görüntüle"
+                        >
+                          <Trophy className="h-4 w-4" />
+                        </Button>
                         {season.is_active && (
                           <Button
                             variant="ghost"
