@@ -275,7 +275,7 @@ export default function MatchesPage() {
                             {/* Takım A */}
                             <div className={cn(
                               "col-span-4 flex items-center gap-2 justify-end transition-all",
-                              match.winner === "A" && "bg-green-500/10 rounded-lg p-1.5 border border-green-500/30"
+                              match.winner === "A" && match.status === "finished" && "bg-green-500/10 rounded-lg p-1.5 border border-green-500/30"
                             )}>
                               {match.hltvRankingA && (
                                 <span className="text-xs font-bold text-[#B84DC7]">#{match.hltvRankingA}</span>
@@ -285,27 +285,27 @@ export default function MatchesPage() {
                                 logoUrl={match.teamALogo}
                                 size={48} 
                                 className={cn(
-                                  "ring-2 transition-all",
+                                  "ring-2 transition-all flex-shrink-0",
                                   match.winner === "A" ? "ring-green-500/50 shadow-lg shadow-green-500/30" : "ring-white/10"
                                 )}
                               />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-1.5">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 justify-end">
                                   <h3 className={cn(
-                                    "text-base font-bold transition-all",
+                                    "text-base font-bold transition-all truncate",
                                     match.winner === "A" ? "text-green-400" : "text-white"
                                   )}>
                                     {match.teamA}
                                   </h3>
                                   {match.winner === "A" && (
-                                    <Trophy className="h-4 w-4 text-green-400" />
+                                    <Trophy className="h-4 w-4 text-green-400 flex-shrink-0" />
                                   )}
                                 </div>
                               </div>
                             </div>
 
                             {/* VS / Skor */}
-                            <div className="col-span-4 flex flex-col items-center justify-center">
+                            <div className="col-span-4 flex flex-col items-center justify-center min-h-[60px]">
                               {match.status === "live" ? (
                                 <div className="text-center">
                                   <div className="text-xl font-black text-red-500">
@@ -314,16 +314,16 @@ export default function MatchesPage() {
                                 </div>
                               ) : match.status === "finished" ? (
                                 <div className="text-center">
-                                  <div className="flex items-center gap-1.5 mb-0.5">
+                                  <div className="flex items-center justify-center gap-1.5 mb-0.5">
                                     <div className={cn(
-                                      "text-2xl font-black transition-all",
+                                      "text-2xl font-black transition-all min-w-[24px] text-center",
                                       match.winner === "A" ? "text-green-400" : match.winner === "B" ? "text-green-400" : "text-white"
                                     )}>
                                       {match.scoreA || 0}
                                     </div>
                                     <span className="text-xl font-bold text-gray-500">-</span>
                                     <div className={cn(
-                                      "text-2xl font-black transition-all",
+                                      "text-2xl font-black transition-all min-w-[24px] text-center",
                                       match.winner === "B" ? "text-green-400" : match.winner === "A" ? "text-green-400" : "text-white"
                                     )}>
                                       {match.scoreB || 0}
@@ -345,15 +345,15 @@ export default function MatchesPage() {
                             {/* Takım B */}
                             <div className={cn(
                               "col-span-4 flex items-center gap-2 justify-start transition-all",
-                              match.winner === "B" && "bg-green-500/10 rounded-lg p-1.5 border border-green-500/30"
+                              match.winner === "B" && match.status === "finished" && "bg-green-500/10 rounded-lg p-1.5 border border-green-500/30"
                             )}>
-                              <div className="flex-1 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
+                              <div className="flex-1 min-w-0 text-right">
+                                <div className="flex items-center justify-start gap-1.5">
                                   {match.winner === "B" && (
-                                    <Trophy className="h-4 w-4 text-green-400" />
+                                    <Trophy className="h-4 w-4 text-green-400 flex-shrink-0" />
                                   )}
                                   <h3 className={cn(
-                                    "text-base font-bold transition-all",
+                                    "text-base font-bold transition-all truncate",
                                     match.winner === "B" ? "text-green-400" : "text-white"
                                   )}>
                                     {match.teamB}
@@ -365,7 +365,7 @@ export default function MatchesPage() {
                                 logoUrl={match.teamBLogo}
                                 size={48} 
                                 className={cn(
-                                  "ring-2 transition-all",
+                                  "ring-2 transition-all flex-shrink-0",
                                   match.winner === "B" ? "ring-green-500/50 shadow-lg shadow-green-500/30" : "ring-white/10"
                                 )}
                               />
