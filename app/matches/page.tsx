@@ -274,7 +274,7 @@ export default function MatchesPage() {
                           <div className="grid grid-cols-12 gap-3 items-center">
                             {/* Takım A */}
                             <div className={cn(
-                              "col-span-4 flex items-center gap-2 justify-end transition-all",
+                              "col-span-4 flex items-center gap-2 justify-center transition-all",
                               match.winner === "A" && match.status === "finished" && "bg-green-500/10 rounded-lg p-1.5 border border-green-500/30"
                             )}>
                               {match.hltvRankingA && (
@@ -290,7 +290,7 @@ export default function MatchesPage() {
                                 )}
                               />
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 justify-end">
+                                <div className="flex items-center gap-1.5 justify-center">
                                   <h3 className={cn(
                                     "text-base font-bold transition-all truncate",
                                     match.winner === "A" ? "text-green-400" : "text-white"
@@ -344,22 +344,12 @@ export default function MatchesPage() {
 
                             {/* Takım B */}
                             <div className={cn(
-                              "col-span-4 flex items-center gap-2 justify-start transition-all",
+                              "col-span-4 flex items-center gap-2 justify-center transition-all",
                               match.winner === "B" && match.status === "finished" && "bg-green-500/10 rounded-lg p-1.5 border border-green-500/30"
                             )}>
-                              <div className="flex-1 min-w-0 text-right">
-                                <div className="flex items-center justify-start gap-1.5">
-                                  {match.winner === "B" && (
-                                    <Trophy className="h-4 w-4 text-green-400 flex-shrink-0" />
-                                  )}
-                                  <h3 className={cn(
-                                    "text-base font-bold transition-all truncate",
-                                    match.winner === "B" ? "text-green-400" : "text-white"
-                                  )}>
-                                    {match.teamB}
-                                  </h3>
-                                </div>
-                              </div>
+                              {match.hltvRankingB && (
+                                <span className="text-xs font-bold text-[#B84DC7]">#{match.hltvRankingB}</span>
+                              )}
                               <TeamLogo 
                                 teamName={match.teamB} 
                                 logoUrl={match.teamBLogo}
@@ -369,9 +359,19 @@ export default function MatchesPage() {
                                   match.winner === "B" ? "ring-green-500/50 shadow-lg shadow-green-500/30" : "ring-white/10"
                                 )}
                               />
-                              {match.hltvRankingB && (
-                                <span className="text-xs font-bold text-[#B84DC7]">#{match.hltvRankingB}</span>
-                              )}
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 justify-center">
+                                  <h3 className={cn(
+                                    "text-base font-bold transition-all truncate",
+                                    match.winner === "B" ? "text-green-400" : "text-white"
+                                  )}>
+                                    {match.teamB}
+                                  </h3>
+                                  {match.winner === "B" && (
+                                    <Trophy className="h-4 w-4 text-green-400 flex-shrink-0" />
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
 
