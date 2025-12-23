@@ -274,8 +274,8 @@ export default function MatchesPage() {
                           <div className="grid grid-cols-12 gap-3 items-center">
                             {/* Takım A */}
                             <div className={cn(
-                              "col-span-4 flex items-center gap-2 justify-center transition-all",
-                              match.winner === "A" && match.status === "finished" && "bg-green-500/10 rounded-lg p-1.5 border border-green-500/30"
+                              "col-span-4 flex flex-col items-center gap-3 justify-center transition-all",
+                              match.winner === "A" && match.status === "finished" && "bg-green-500/10 rounded-lg p-3 border border-green-500/30"
                             )}>
                               {match.hltvRankingA && (
                                 <span className="text-xs font-bold text-[#B84DC7]">#{match.hltvRankingA}</span>
@@ -289,10 +289,10 @@ export default function MatchesPage() {
                                   match.winner === "A" ? "ring-green-500/50 shadow-lg shadow-green-500/30" : "ring-white/10"
                                 )}
                               />
-                              <div className="flex-1 min-w-0">
+                              <div className="text-center">
                                 <div className="flex items-center gap-1.5 justify-center">
                                   <h3 className={cn(
-                                    "text-base font-bold transition-all truncate",
+                                    "text-base font-bold transition-all",
                                     match.winner === "A" ? "text-green-400" : "text-white"
                                   )}>
                                     {match.teamA}
@@ -344,8 +344,8 @@ export default function MatchesPage() {
 
                             {/* Takım B */}
                             <div className={cn(
-                              "col-span-4 flex items-center gap-2 justify-center transition-all",
-                              match.winner === "B" && match.status === "finished" && "bg-green-500/10 rounded-lg p-1.5 border border-green-500/30"
+                              "col-span-4 flex flex-col items-center gap-3 justify-center transition-all",
+                              match.winner === "B" && match.status === "finished" && "bg-green-500/10 rounded-lg p-3 border border-green-500/30"
                             )}>
                               {match.hltvRankingB && (
                                 <span className="text-xs font-bold text-[#B84DC7]">#{match.hltvRankingB}</span>
@@ -359,10 +359,10 @@ export default function MatchesPage() {
                                   match.winner === "B" ? "ring-green-500/50 shadow-lg shadow-green-500/30" : "ring-white/10"
                                 )}
                               />
-                              <div className="min-w-0">
+                              <div className="text-center">
                                 <div className="flex items-center gap-1.5 justify-center">
                                   <h3 className={cn(
-                                    "text-base font-bold transition-all truncate",
+                                    "text-base font-bold transition-all",
                                     match.winner === "B" ? "text-green-400" : "text-white"
                                   )}>
                                     {match.teamB}
