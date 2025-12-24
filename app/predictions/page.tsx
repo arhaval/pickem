@@ -694,8 +694,15 @@ export default function PredictionsPage() {
           </div>
         ) : Object.keys(groupedMatches).length === 0 ? (
           <div className="text-center py-12 rounded-xl border border-white/10 bg-gradient-to-br from-[#131720] to-[#0f172a]">
-            <p className="text-gray-400">Henüz maç bulunamadı.</p>
-            <p className="text-sm text-gray-500 mt-2">Admin panelinden maç ekleyebilirsiniz.</p>
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-[#B84DC7]/10 flex items-center justify-center">
+                <Trophy className="h-8 w-8 text-[#B84DC7]" />
+              </div>
+              <div>
+                <p className="text-lg font-semibold text-white mb-2">Bu dönem için maç bulunmuyor</p>
+                <p className="text-sm text-gray-400">Yakında yeni maçlar eklenecek. Lütfen daha sonra tekrar kontrol edin.</p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-12">
