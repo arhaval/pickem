@@ -67,6 +67,7 @@ export default function AdminMatches() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [selectedResult, setSelectedResult] = useState<string>("");
@@ -309,6 +310,11 @@ export default function AdminMatches() {
 
   // Yeni maç ekle
   const handleAddMatch = async () => {
+    // Çift submit önleme
+    if (isSaving) {
+      return;
+    }
+    
     if (!formData.team_a_id || !formData.team_b_id || !formData.match_date || !formData.match_time) {
       alert("Lütfen tüm zorunlu alanları doldurun.");
       return;
@@ -334,6 +340,7 @@ export default function AdminMatches() {
       return;
     }
 
+    setIsSaving(true);
     try {
       // Puanları parseFloat ile sayıya çevir
       const difficultyScoreA = parseFloat(formData.difficulty_score_a);
@@ -416,6 +423,8 @@ export default function AdminMatches() {
     } catch (error: any) {
       console.error("Maç eklenirken hata:", JSON.stringify(error, null, 2));
       alert(error?.message || "Maç eklenirken bir hata oluştu.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1303,8 +1312,9 @@ export default function AdminMatches() {
               <Button
                 className="bg-[#B84DC7] hover:bg-[#B84DC7]/90 text-white"
                 onClick={handleAddMatch}
+                disabled={isSaving}
               >
-                {isEditMode ? "Güncelle" : "Kaydet"}
+                {isSaving ? "Kaydediliyor..." : (isEditMode ? "Güncelle" : "Kaydet")}
               </Button>
             </DialogFooter>
           </DialogContent>
