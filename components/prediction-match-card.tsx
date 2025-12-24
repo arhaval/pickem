@@ -145,11 +145,11 @@ export default function PredictionMatchCard({
                 </span>
               </div>
             )}
-            {/* Tarih ve Saat */}
+            {/* Saat */}
             <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3 w-3" />
-                <span>{matchDate} • {matchTime}</span>
+                <span>{matchTime}</span>
               </div>
             </div>
             {/* Kilitlenme Zamanı */}
@@ -316,6 +316,8 @@ export default function PredictionMatchCard({
             <div className="flex flex-col items-center gap-2">
               <span className="text-3xl font-black text-white/20">VS</span>
               <div className="h-px w-12 bg-white/10"></div>
+              {/* Tarih */}
+              <span className="text-xs text-gray-400 mt-2">{matchDate}</span>
             </div>
           </div>
 
