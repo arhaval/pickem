@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import TeamLogo from "@/components/team-logo";
-import { useRouter } from "next/navigation";
 
 interface LiveLobby {
   id: string;
