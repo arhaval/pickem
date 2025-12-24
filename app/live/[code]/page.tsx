@@ -413,28 +413,9 @@ export default function LiveLobbyPage() {
   }
 
   // Üye olmayan kullanıcılar için login sayfasına yönlendir
+  // (checkAuth içinde yönlendirme yapıldı)
   if (!user && !checkingAuth) {
-    return null; // Router yönlendirmesi yapıldı, bu kısım render edilmeyecek
-  }
-  
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#0a0e1a] to-black flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto px-4">
-            <div className="mb-6">
-              <Radio className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-white mb-2">Giriş Gerekli</h1>
-              <p className="text-gray-400 mb-4">
-                Bu sayfaya erişmek için giriş yapmanız veya üye olmanız gerekiyor.
-              </p>
-              <p className="text-sm text-gray-500">
-                Giriş penceresi açılıyor...
-              </p>
-            </div>
-          </div>
-        </div>
-      </>
-    );
+    return null; // Router yönlendirmesi yapıldı
   }
 
   if (error || !lobby) {
