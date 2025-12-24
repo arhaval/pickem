@@ -6,10 +6,10 @@ import PredictionMatchCard from "@/components/prediction-match-card";
 import PageHeader from "@/components/page-header";
 import SelectedMatchesSummary from "@/components/selected-matches-summary";
 import PredictionsConfirmationModal from "@/components/predictions-confirmation-modal";
-import { Calendar, Loader2, CheckCircle2, Lock, LogIn, Trophy, XCircle } from "lucide-react";
+import { Calendar, Loader2, CheckCircle2, Lock, LogIn, Trophy, XCircle, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import AuthModal from "@/components/auth-modal";
+import Link from "next/link";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { getActiveSeasonId } from "@/lib/season-utils";
 import { isMatchLocked, getPredictionLockMinutes } from "@/lib/match-utils";
@@ -49,7 +49,6 @@ export default function PredictionsPage() {
   const [showLockAnimation, setShowLockAnimation] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [userPredictions, setUserPredictions] = useState<Map<string | number, string>>(new Map()); // matchId -> selected_team
 
@@ -263,7 +262,8 @@ export default function PredictionsPage() {
   const handleSelectTeam = (matchId: string | number, team: "A" | "B") => {
     // Giriş yapmamış kullanıcılar tahmin yapamaz
     if (!user) {
-      setIsAuthModalOpen(true);
+      // Kayıt ol sayfasına yönlendir
+      window.location.href = "/register";
       return;
     }
 
@@ -309,7 +309,8 @@ export default function PredictionsPage() {
   const handleSubmitClick = () => {
     // Giriş yapmamış kullanıcılar tahmin gönderemez
     if (!user) {
-      setIsAuthModalOpen(true);
+      // Kayıt ol sayfasına yönlendir
+      window.location.href = "/register";
       return;
     }
 
@@ -679,13 +680,20 @@ export default function PredictionsPage() {
             <p className="text-gray-300 mb-4">
               Tahmin yapabilmek ve ödülleri kazanabilmek için lütfen giriş yapın veya kayıt olun.
             </p>
-            <Button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="bg-gradient-to-r from-[#D69ADE] to-[#C97AE0] text-white font-bold hover:opacity-90"
-            >
-              <LogIn className="h-4 w-4 mr-2" />
-              Giriş Yap / Kayıt Ol
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Link href="/register">
+                <Button className="bg-gradient-to-r from-[#D69ADE] to-[#C97AE0] text-white font-bold hover:opacity-90">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Kayıt Ol
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Giriş Yap
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
 
@@ -870,11 +878,6 @@ export default function PredictionsPage() {
         isSubmitting={isSubmitting}
       />
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
     </div>
   );
 }

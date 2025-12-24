@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import TeamLogo from "@/components/team-logo";
-import AuthModal from "@/components/auth-modal";
+import { useRouter } from "next/navigation";
 
 interface LiveLobby {
   id: string;
@@ -60,7 +60,6 @@ export default function LiveLobbyPage() {
   const [viewers, setViewers] = useState(0);
   const [user, setUser] = useState<any>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [winners, setWinners] = useState<any[]>([]);
   const [loadingWinners, setLoadingWinners] = useState(false);
 
@@ -69,8 +68,8 @@ export default function LiveLobbyPage() {
     const checkAuth = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (!user || error) {
-        // Kullanıcı giriş yapmamış, auth modal'ı aç
-        setIsAuthModalOpen(true);
+        // Kullanıcı giriş yapmamış, login sayfasına yönlendir
+        router.push("/login");
         setCheckingAuth(false);
         return;
       }
@@ -84,7 +83,6 @@ export default function LiveLobbyPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user);
-        setIsAuthModalOpen(false);
         setCheckingAuth(false);
         // Sayfayı yenile
         window.location.reload();
@@ -415,19 +413,14 @@ export default function LiveLobbyPage() {
     );
   }
 
-  // Üye olmayan kullanıcılar için auth modal göster
+  // Üye olmayan kullanıcılar için login sayfasına yönlendir
   if (!user && !checkingAuth) {
+    return null; // Router yönlendirmesi yapıldı, bu kısım render edilmeyecek
+  }
+  
+  if (!user) {
     return (
-      <>
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => {
-            setIsAuthModalOpen(false);
-            router.push("/");
-          }}
-          defaultTab="login"
-        />
-        <div className="min-h-screen bg-gradient-to-b from-[#0a0e1a] to-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-[#0a0e1a] to-black flex items-center justify-center">
           <div className="text-center max-w-md mx-auto px-4">
             <div className="mb-6">
               <Radio className="h-16 w-16 text-gray-600 mx-auto mb-4" />
