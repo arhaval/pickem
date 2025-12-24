@@ -11,9 +11,15 @@ export default function ConditionalLayout({
 }) {
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith("/admin");
+  const isAuthPage = pathname === "/register" || pathname === "/login";
 
   // Admin sayfalarında Navbar ve SponsorBanner gösterme
   if (isAdminPage) {
+    return <>{children}</>;
+  }
+
+  // Auth sayfalarında (register/login) layout gösterme
+  if (isAuthPage) {
     return <>{children}</>;
   }
 
