@@ -53,9 +53,28 @@ export async function getPredictionLockMinutes(): Promise<number> {
       .from("site_settings")
       .select("prediction_lock_minutes_before_match")
       .eq("id", 1)
-      .single();
+      .maybeSingle();
     
-    if (error || !data) {
+    // Kolon yoksa veya hata varsa varsayılan değer döndür
+    if (error) {
+      // Kolon yoksa hatası (schema cache hatası)
+      if (error.message && (
+        error.message.includes("prediction_lock_minutes_before_match") ||
+        error.message.includes("column") ||
+        error.message.includes("schema cache")
+      )) {
+        console.warn("prediction_lock_minutes_before_match kolonu bulunamadı. Migration dosyasını çalıştırın: supabase/migrations/add_prediction_lock_setting.sql");
+        lockMinutesCache = 0;
+        lockMinutesCacheTime = now;
+        return 0; // Varsayılan: maç saati
+      }
+      // Diğer hatalar için de varsayılan değer döndür
+      lockMinutesCache = 0;
+      lockMinutesCacheTime = now;
+      return 0;
+    }
+    
+    if (!data) {
       lockMinutesCache = 0;
       lockMinutesCacheTime = now;
       return 0; // Varsayılan: maç saati
@@ -65,8 +84,17 @@ export async function getPredictionLockMinutes(): Promise<number> {
     lockMinutesCache = minutes;
     lockMinutesCacheTime = now;
     return minutes;
-  } catch (error) {
-    console.error("Tahmin kilitleme ayarı yüklenirken hata:", error);
+  } catch (error: any) {
+    // Schema hatası veya diğer hatalar
+    if (error?.message && (
+      error.message.includes("prediction_lock_minutes_before_match") ||
+      error.message.includes("column") ||
+      error.message.includes("schema cache")
+    )) {
+      console.warn("prediction_lock_minutes_before_match kolonu bulunamadı. Migration dosyasını çalıştırın: supabase/migrations/add_prediction_lock_setting.sql");
+    } else {
+      console.error("Tahmin kilitleme ayarı yüklenirken hata:", error);
+    }
     lockMinutesCache = 0;
     lockMinutesCacheTime = now;
     return 0; // Varsayılan: maç saati
