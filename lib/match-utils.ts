@@ -3,15 +3,28 @@
  */
 
 /**
- * Şu anki Türkiye saatini timestamp olarak döndürür (UTC+3)
+ * Şu anki Türkiye saatini UTC timestamp olarak döndürür
+ * Türkiye saatini temsil eden bir UTC timestamp döndürür (karşılaştırma için)
  */
 function getTurkeyTimeMs(): number {
   const now = new Date();
-  // Şu anki UTC zamanı (milliseconds)
-  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-  // Türkiye UTC+3, yani 3 saat ekliyoruz
+  
+  // Türkiye timezone'unda şu anki zamanı al (saat, dakika, saniye, gün, ay, yıl)
+  const turkeyDate = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }));
+  
+  // Türkiye saatini UTC timestamp'e çevir
+  const year = turkeyDate.getFullYear();
+  const month = turkeyDate.getMonth();
+  const day = turkeyDate.getDate();
+  const hour = turkeyDate.getHours();
+  const minute = turkeyDate.getMinutes();
+  const second = turkeyDate.getSeconds();
+  
+  // Bu Türkiye saatini UTC timestamp'e çevir (Türkiye saati - 3 saat = UTC)
+  const utcTimestamp = Date.UTC(year, month, day, hour, minute, second);
   const turkeyOffsetMs = 3 * 60 * 60 * 1000; // 3 saat in milliseconds
-  return utcTime + turkeyOffsetMs;
+  // Türkiye saati = UTC + 3, yani UTC = Türkiye - 3
+  return utcTimestamp - turkeyOffsetMs;
 }
 
 /**
