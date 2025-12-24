@@ -3,35 +3,37 @@
  */
 
 /**
- * Türkiye saatini alır (UTC+3 - Europe/Istanbul)
+ * Şu anki Türkiye saatini timestamp olarak döndürür (UTC+3)
  */
-function getTurkeyTime(): Date {
+function getTurkeyTimeMs(): number {
   const now = new Date();
-  // Türkiye UTC+3 (Europe/Istanbul)
-  const turkeyOffset = 3 * 60; // UTC+3 in minutes
-  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  return new Date(utc + (turkeyOffset * 60000));
+  // Şu anki UTC zamanı (milliseconds)
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+  // Türkiye UTC+3, yani 3 saat ekliyoruz
+  const turkeyOffsetMs = 3 * 60 * 60 * 1000; // 3 saat in milliseconds
+  return utcTime + turkeyOffsetMs;
 }
 
 /**
- * Tarih string'ini Türkiye saati olarak parse eder
+ * Tarih string'ini Türkiye saati olarak parse edip timestamp döndürür
+ * Girilen tarih/saat Türkiye saatidir (UTC+3)
+ * Örnek: "2025-12-25" ve "01:15" -> Türkiye saati 2025-12-25 01:15
  * @param dateString - YYYY-MM-DD formatında tarih
  * @param timeString - HH:MM formatında saat
- * @returns Türkiye saatine göre Date objesi
+ * @returns Timestamp (milliseconds, Türkiye saatini temsil eder)
  */
-function parseTurkeyDateTime(dateString: string, timeString: string): Date {
+function parseTurkeyDateTimeMs(dateString: string, timeString: string): number {
   // Tarih ve saati parse et
   const [year, month, day] = dateString.split('-').map(Number);
   const [hours, minutes] = timeString.split(':').map(Number);
   
   // Girilen saat Türkiye saati (UTC+3) olarak yorumlanmalı
-  // Örnek: 2025-12-25 01:15 Türkiye saati = 2025-12-24 22:15 UTC
-  // UTC olarak Date objesi oluştur, sonra Türkiye offset'ini çıkar
+  // Türkiye saati 2025-12-25 01:15 = UTC 2025-12-24 22:15 (3 saat geride)
+  // UTC timestamp oluştur ve 3 saat geriye al
   const utcTimestamp = Date.UTC(year, month - 1, day, hours, minutes, 0);
-  // Türkiye UTC+3, yani Türkiye saati = UTC + 3 saat
-  // UTC = Türkiye - 3 saat
   const turkeyOffsetMs = 3 * 60 * 60 * 1000; // 3 saat in milliseconds
-  return new Date(utcTimestamp - turkeyOffsetMs);
+  // Türkiye saati = UTC + 3, bu yüzden UTC = Türkiye - 3
+  return utcTimestamp - turkeyOffsetMs;
 }
 
 /**
@@ -47,14 +49,14 @@ export function isMatchStarted(matchDate: string | null, matchTime: string): boo
   }
 
   try {
-    // Tarih ve saati Türkiye saati olarak parse et
-    const matchDateTime = parseTurkeyDateTime(matchDate, matchTime);
+    // Tarih ve saati Türkiye saati olarak parse et (timestamp olarak)
+    const matchDateTimeMs = parseTurkeyDateTimeMs(matchDate, matchTime);
     
-    // Şu anki Türkiye saati
-    const now = getTurkeyTime();
+    // Şu anki Türkiye saati (timestamp olarak)
+    const nowMs = getTurkeyTimeMs();
     
     // Maç başladı mı?
-    return now >= matchDateTime;
+    return nowMs >= matchDateTimeMs;
   } catch (error) {
     console.error("Maç tarihi kontrol edilirken hata:", error);
     // Hata durumunda güvenlik için true döndür (maç başlamış sayılır)
@@ -161,17 +163,17 @@ export function isMatchLocked(
     // Kilitleme dakikasını al (parametre yoksa cache'den)
     const lockMinutes = lockMinutesBeforeMatch ?? (lockMinutesCache ?? 0);
     
-    // Tarih ve saati Türkiye saati olarak parse et
-    const matchDateTime = parseTurkeyDateTime(matchDate, matchTime);
+    // Tarih ve saati Türkiye saati olarak parse et (timestamp olarak)
+    const matchDateTimeMs = parseTurkeyDateTimeMs(matchDate, matchTime);
     
     // Kilitleme zamanını hesapla (maçtan X dakika önce)
-    const lockDateTime = new Date(matchDateTime.getTime() - (lockMinutes * 60 * 1000));
+    const lockDateTimeMs = matchDateTimeMs - (lockMinutes * 60 * 1000);
     
-    // Şu anki Türkiye saati
-    const now = getTurkeyTime();
+    // Şu anki Türkiye saati (timestamp olarak)
+    const nowMs = getTurkeyTimeMs();
     
     // Kilitleme zamanı geçti mi?
-    return now >= lockDateTime;
+    return nowMs >= lockDateTimeMs;
   } catch (error) {
     console.error("Maç kilit kontrolü yapılırken hata:", error);
     // Hata durumunda güvenlik için true döndür (kilitli sayılır)
