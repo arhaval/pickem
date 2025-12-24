@@ -3,6 +3,38 @@
  */
 
 /**
+ * Türkiye saatini alır (UTC+3 - Europe/Istanbul)
+ */
+function getTurkeyTime(): Date {
+  const now = new Date();
+  // Türkiye UTC+3 (Europe/Istanbul)
+  const turkeyOffset = 3 * 60; // UTC+3 in minutes
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  return new Date(utc + (turkeyOffset * 60000));
+}
+
+/**
+ * Tarih string'ini Türkiye saati olarak parse eder
+ * @param dateString - YYYY-MM-DD formatında tarih
+ * @param timeString - HH:MM formatında saat
+ * @returns Türkiye saatine göre Date objesi
+ */
+function parseTurkeyDateTime(dateString: string, timeString: string): Date {
+  // Tarih ve saati parse et
+  const [year, month, day] = dateString.split('-').map(Number);
+  const [hours, minutes] = timeString.split(':').map(Number);
+  
+  // Girilen saat Türkiye saati (UTC+3) olarak yorumlanmalı
+  // Örnek: 2025-12-25 01:15 Türkiye saati = 2025-12-24 22:15 UTC
+  // UTC olarak Date objesi oluştur, sonra Türkiye offset'ini çıkar
+  const utcTimestamp = Date.UTC(year, month - 1, day, hours, minutes, 0);
+  // Türkiye UTC+3, yani Türkiye saati = UTC + 3 saat
+  // UTC = Türkiye - 3 saat
+  const turkeyOffsetMs = 3 * 60 * 60 * 1000; // 3 saat in milliseconds
+  return new Date(utcTimestamp - turkeyOffsetMs);
+}
+
+/**
  * Maçın başlayıp başlamadığını kontrol eder
  * @param matchDate - Maç tarihi (YYYY-MM-DD formatında)
  * @param matchTime - Maç saati (HH:MM formatında)
@@ -15,11 +47,11 @@ export function isMatchStarted(matchDate: string | null, matchTime: string): boo
   }
 
   try {
-    // Tarih ve saati birleştir
-    const matchDateTime = new Date(`${matchDate}T${matchTime}:00`);
+    // Tarih ve saati Türkiye saati olarak parse et
+    const matchDateTime = parseTurkeyDateTime(matchDate, matchTime);
     
-    // Şu anki tarih/saat
-    const now = new Date();
+    // Şu anki Türkiye saati
+    const now = getTurkeyTime();
     
     // Maç başladı mı?
     return now >= matchDateTime;
@@ -129,14 +161,14 @@ export function isMatchLocked(
     // Kilitleme dakikasını al (parametre yoksa cache'den)
     const lockMinutes = lockMinutesBeforeMatch ?? (lockMinutesCache ?? 0);
     
-    // Tarih ve saati birleştir
-    const matchDateTime = new Date(`${matchDate}T${matchTime}:00`);
+    // Tarih ve saati Türkiye saati olarak parse et
+    const matchDateTime = parseTurkeyDateTime(matchDate, matchTime);
     
     // Kilitleme zamanını hesapla (maçtan X dakika önce)
     const lockDateTime = new Date(matchDateTime.getTime() - (lockMinutes * 60 * 1000));
     
-    // Şu anki tarih/saat
-    const now = new Date();
+    // Şu anki Türkiye saati
+    const now = getTurkeyTime();
     
     // Kilitleme zamanı geçti mi?
     return now >= lockDateTime;
@@ -146,9 +178,3 @@ export function isMatchLocked(
     return true;
   }
 }
-
-
-
-
-
-
