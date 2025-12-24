@@ -59,6 +59,9 @@ export default function PredictionsPage() {
 
     setLoading(true);
     setError(null);
+    
+    // Kilitleme dakikası cache'ini önceden yükle
+    await getPredictionLockMinutes();
 
     try {
       // TÜM MAÇLARI ÇEK - Timeout kaldırıldı
