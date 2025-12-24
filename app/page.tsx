@@ -326,6 +326,47 @@ export default function Home() {
     }
   };
 
+  // YouTube URL'sinden video ID çıkar
+  const extractYouTubeVideoId = (url: string): string => {
+    if (!url || typeof url !== 'string' || url.trim().length === 0) {
+      return "";
+    }
+    
+    let cleanUrl = url.trim();
+    
+    // Farklı YouTube URL formatlarını destekle
+    const patterns = [
+      // https://www.youtube.com/watch?v=VIDEO_ID
+      /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+      // https://youtu.be/VIDEO_ID
+      /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      // https://www.youtube.com/embed/VIDEO_ID
+      /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      // https://www.youtube.com/v/VIDEO_ID
+      /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+      // https://m.youtube.com/watch?v=VIDEO_ID
+      /(?:m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+    ];
+
+    for (const pattern of patterns) {
+      const match = cleanUrl.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+
+    return "";
+  };
+
+  // Thumbnail URL'den video ID çıkar
+  const extractVideoIdFromThumbnail = (thumbnailUrl: string): string => {
+    if (!thumbnailUrl || typeof thumbnailUrl !== 'string') {
+      return "";
+    }
+    const match = thumbnailUrl.match(/vi\/([a-zA-Z0-9_-]{11})\//);
+    return match && match[1] ? match[1] : "";
+  };
+
   const getTeamInfo = (teamName: string) => {
     return teams.find((t) => t.name === teamName);
   };
@@ -762,10 +803,29 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {videos.map((video, index) => (
+              {videos.map((video, index) => {
+                // href yoksa thumbnail'dan veya href'ten video ID çıkar ve YouTube linki oluştur
+                let videoHref = video.href;
+                if (!videoHref || videoHref.trim() === "") {
+                  // Thumbnail URL'den video ID çıkar
+                  const videoId = video.thumbnailUrl 
+                    ? extractVideoIdFromThumbnail(video.thumbnailUrl)
+                    : "";
+                  if (videoId) {
+                    videoHref = `https://www.youtube.com/watch?v=${videoId}`;
+                  }
+                } else {
+                  // href varsa ama geçerli bir YouTube linki değilse, video ID çıkar ve düzelt
+                  const videoId = extractYouTubeVideoId(videoHref);
+                  if (videoId && !videoHref.includes("youtube.com") && !videoHref.includes("youtu.be")) {
+                    videoHref = `https://www.youtube.com/watch?v=${videoId}`;
+                  }
+                }
+                
+                return (
               <a
                 key={index}
-                href={video.href}
+                href={videoHref || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative rounded-xl border border-white/10 bg-gradient-to-br from-[#131720] to-[#0f172a] overflow-hidden hover:border-[#D69ADE]/50 hover:shadow-lg hover:shadow-[#D69ADE]/10 transition-all"
@@ -827,7 +887,8 @@ export default function Home() {
                   </div>
                 </div>
               </a>
-              ))}
+              );
+              })}
             </div>
           )}
         </div>
