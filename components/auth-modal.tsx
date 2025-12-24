@@ -19,9 +19,10 @@ interface AuthModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   defaultTab?: "login" | "register";
+  hideHeader?: boolean;
 }
 
-export default function AuthModal({ isOpen: externalIsOpen, onClose, defaultTab = "login" }: AuthModalProps = {}) {
+export default function AuthModal({ isOpen: externalIsOpen, onClose, defaultTab = "login", hideHeader = false }: AuthModalProps = {}) {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const setIsOpen = onClose || setInternalIsOpen;
@@ -158,16 +159,18 @@ export default function AuthModal({ isOpen: externalIsOpen, onClose, defaultTab 
       }
     }}>
       <DialogContent className="sm:max-w-[400px] bg-[#0f172a] border border-white/10 text-white p-0 overflow-hidden">
-        <div className="p-6 pb-0">
-          <DialogHeader className="mb-4">
-            <DialogTitle className="text-2xl font-black text-center uppercase tracking-tight">
-              Aramıza <span className="text-[#D69ADE]">Katıl</span>
-            </DialogTitle>
-            <DialogDescription className="text-center text-gray-400">
-              Tahmin yapmak ve ödül kazanmak için devam et.
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+        {!hideHeader && (
+          <div className="p-6 pb-0">
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-2xl font-black text-center uppercase tracking-tight">
+                Aramıza <span className="text-[#D69ADE]">Katıl</span>
+              </DialogTitle>
+              <DialogDescription className="text-center text-gray-400">
+                Tahmin yapmak ve ödül kazanmak için devam et.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-6">
