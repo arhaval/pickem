@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -146,14 +147,20 @@ export default function RegisterPage() {
           <div className="hidden lg:block">
             <div className="space-y-6">
               <div>
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-[#D69ADE] to-[#B84DC7] mb-6">
-                  <Trophy className="h-8 w-8 text-white" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-[#D69ADE] to-[#B84DC7] mb-6 p-3">
+                  <Image
+                    src="/logo.png"
+                    alt="Arhaval"
+                    width={40}
+                    height={40}
+                    className="object-contain w-full h-full"
+                  />
                 </div>
                 <h1 className="text-4xl font-black text-white mb-4 leading-tight">
                   Aramıza <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D69ADE] to-[#B84DC7]">Katıl</span>
                 </h1>
                 <p className="text-lg text-gray-400 leading-relaxed">
-                  CS2 tahminlerinde uzmanlaş, puanlar kazan ve liderlik tablosunda yüksel!
+                  Tahminler yap, canlı etkinliklere katıl ve sevdiğin takımların maçlarını takip et !
                 </p>
               </div>
               
@@ -196,13 +203,19 @@ export default function RegisterPage() {
             <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#131720] to-[#0f172a] p-8 backdrop-blur-md shadow-2xl">
               {/* Mobil Başlık */}
               <div className="text-center mb-8 lg:hidden">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-r from-[#D69ADE] to-[#B84DC7] mb-4">
-                  <Trophy className="h-7 w-7 text-white" />
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-r from-[#D69ADE] to-[#B84DC7] mb-4 p-3">
+                  <Image
+                    src="/logo.png"
+                    alt="Arhaval"
+                    width={32}
+                    height={32}
+                    className="object-contain w-full h-full"
+                  />
                 </div>
                 <h1 className="text-3xl font-black text-white mb-2">
                   Aramıza <span className="text-[#D69ADE]">Katıl</span>
                 </h1>
-                <p className="text-gray-400">Hesap oluştur ve hemen başla</p>
+                <p className="text-gray-400">Tahminler yap, canlı etkinliklere katıl ve sevdiğin takımların maçlarını takip et !</p>
               </div>
 
               {/* Desktop Başlık */}
