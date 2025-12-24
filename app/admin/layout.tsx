@@ -55,11 +55,6 @@ const navigation = [
     icon: Shield,
   },
   {
-    name: "Türk Takımları Sıralaması",
-    href: "/admin/turkish-teams",
-    icon: Trophy,
-  },
-  {
     name: "Kullanıcı Yönetimi",
     href: "/admin/users",
     icon: Users,

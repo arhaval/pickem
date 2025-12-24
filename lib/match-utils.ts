@@ -172,6 +172,24 @@ export function isMatchLocked(
     // Şu anki Türkiye saati (timestamp olarak)
     const nowMs = getTurkeyTimeMs();
     
+    // Debug logları (sadece development'ta)
+    if (process.env.NODE_ENV === 'development') {
+      const matchDateObj = new Date(matchDateTimeMs);
+      const lockDateObj = new Date(lockDateTimeMs);
+      const nowDateObj = new Date(nowMs);
+      console.log('[isMatchLocked]', {
+        matchDate,
+        matchTime,
+        lockMinutes,
+        matchDateTime: matchDateObj.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }),
+        lockDateTime: lockDateObj.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }),
+        nowDateTime: nowDateObj.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }),
+        isLocked: nowMs >= lockDateTimeMs,
+        diffMs: nowMs - lockDateTimeMs,
+        diffMinutes: (nowMs - lockDateTimeMs) / (60 * 1000)
+      });
+    }
+    
     // Kilitleme zamanı geçti mi?
     return nowMs >= lockDateTimeMs;
   } catch (error) {
