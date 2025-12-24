@@ -8,7 +8,6 @@ import { Target, Home, Trophy, User, LogIn, UserPlus, Calendar } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/supabase/client";
-import AuthModal from "@/components/auth-modal";
 import UserMenu from "@/components/user-menu";
 import AnnouncementBar from "@/components/announcement-bar";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -39,8 +38,6 @@ const navigation = [
 export default function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<{
     username?: string | null;
@@ -94,10 +91,6 @@ export default function Navbar() {
         setUserProfile(null);
       }
       
-      // Giriş başarılı olduysa modal'ı kapat
-      if (event === "SIGNED_IN") {
-        setIsAuthModalOpen(false);
-      }
     });
 
     return () => {
@@ -189,28 +182,24 @@ export default function Navbar() {
               />
             ) : (
               <>
-                <Button
-                  onClick={() => {
-                    setAuthModalTab("register");
-                    setIsAuthModalOpen(true);
-                  }}
-                  variant="outline"
-                  className="border-white/10 text-gray-300 hover:bg-white/5 hover:border-[#D69ADE]/30"
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Kayıt Ol
-                </Button>
-                <Button
-                  onClick={() => {
-                    setAuthModalTab("login");
-                    setIsAuthModalOpen(true);
-                  }}
-                  variant="outline"
-                  className="border-white/10 text-gray-300 hover:bg-white/5 hover:border-[#D69ADE]/30"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Giriş Yap
-                </Button>
+                <Link href="/register">
+                  <Button
+                    variant="outline"
+                    className="border-white/10 text-gray-300 hover:bg-white/5 hover:border-[#D69ADE]/30"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Kayıt Ol
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button
+                    variant="outline"
+                    className="border-white/10 text-gray-300 hover:bg-white/5 hover:border-[#D69ADE]/30"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Giriş Yap
+                  </Button>
+                </Link>
               </>
             )}
           </div>
@@ -278,42 +267,29 @@ export default function Navbar() {
                 />
               ) : (
                 <>
-                  <Button
-                    onClick={() => {
-                      setAuthModalTab("register");
-                      setIsAuthModalOpen(true);
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full bg-gradient-to-r from-[#D69ADE] to-[#C97AE0] text-white font-semibold hover:opacity-90"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Kayıt Ol
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setAuthModalTab("login");
-                      setIsAuthModalOpen(true);
-                      setIsMenuOpen(false);
-                    }}
-                    variant="outline"
-                    className="w-full border-white/10 text-gray-300 hover:bg-white/5 hover:border-[#D69ADE]/30"
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Giriş Yap
-                  </Button>
+                  <Link href="/register" onClick={() => setIsMenuOpen(false)}>
+                    <Button
+                      className="w-full bg-gradient-to-r from-[#D69ADE] to-[#C97AE0] text-white font-semibold hover:opacity-90"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Kayıt Ol
+                    </Button>
+                  </Link>
+                  <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                    <Button
+                      variant="outline"
+                      className="w-full border-white/10 text-gray-300 hover:bg-white/5 hover:border-[#D69ADE]/30"
+                    >
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Giriş Yap
+                    </Button>
+                  </Link>
                 </>
               )}
             </div>
           </div>
         </div>
       )}
-
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)}
-        defaultTab={authModalTab}
-      />
       </nav>
     </>
   );
