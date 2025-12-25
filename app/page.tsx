@@ -43,12 +43,6 @@ interface MatchOfTheDay {
   }>;
 }
 
-interface Team {
-  id: number;
-  name: string;
-  logo_url: string;
-  short_code: string;
-}
 
 // TODO: YouTube API veya backend'den gerçek video listesi bağlanacak
 interface YouTubeVideo {
@@ -718,7 +712,8 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {homepagePicks.map((match) => {
+              {homepagePicks.map((match: any) => {
+                // Join'den gelen veriler zaten formatlanmış
                 const teamAInfo = match.team_a_logo 
                   ? { logo_url: match.team_a_logo, name: match.team_a }
                   : getTeamInfo(match.team_a);
