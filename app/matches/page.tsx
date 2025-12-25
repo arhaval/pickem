@@ -18,10 +18,10 @@ interface Team {
 
 interface Match {
   id: string;
-  team_a_id: string | number;
-  team_b_id: string | number;
-  team_a: Team | null;
-  team_b: Team | null;
+  teamA: string;
+  teamB: string;
+  teamALogo?: string | null;
+  teamBLogo?: string | null;
   matchTime: string;
   matchDate: string;
   status: "upcoming" | "live" | "finished";
