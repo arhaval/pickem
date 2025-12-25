@@ -34,8 +34,10 @@ interface Season {
 
 interface Match {
   id: string;
-  team_a: string;
-  team_b: string;
+  team_a_id: string | number;
+  team_b_id: string | number;
+  team_a: Team | null;
+  team_b: Team | null;
   match_time: string;
   match_date: string | null;
   winner: string | null;
@@ -210,10 +212,24 @@ export default function AdminMatches() {
           }
         }
 
-        // Maçları yükle
+        // Maçları yükle - Teams ile join ederek
         let query = supabase
           .from("matches")
-          .select("*");
+          .select(`
+            *,
+            team_a:teams!matches_team_a_id_fkey (
+              id,
+              name,
+              short_code,
+              logo_url
+            ),
+            team_b:teams!matches_team_b_id_fkey (
+              id,
+              name,
+              short_code,
+              logo_url
+            )
+          `);
         
         if (showArchived) {
           query = query.eq("is_archived", true);
@@ -284,12 +300,10 @@ export default function AdminMatches() {
 
   // Maç düzenle
   const handleEditMatch = (match: Match) => {
-    const teamA = teams.find(t => t.name === match.team_a);
-    const teamB = teams.find(t => t.name === match.team_b);
-
+    // team_a_id ve team_b_id zaten match objesinde mevcut
     setFormData({
-      team_a_id: teamA?.id.toString() || "",
-      team_b_id: teamB?.id.toString() || "",
+      team_a_id: match.team_a_id?.toString() || "",
+      team_b_id: match.team_b_id?.toString() || "",
       match_date: match.match_date ? match.match_date.split('T')[0] : "", // Tarih formatını düzelt (YYYY-MM-DD)
       match_time: match.match_time || "",
       tournament_name: match.tournament_name || "",
@@ -353,8 +367,8 @@ export default function AdminMatches() {
 
       // Tüm alanlar - Tahminler için olan maçlar (yayın ve HLTV bilgileri yok)
       const insertData: any = {
-        team_a: teamA.name,
-        team_b: teamB.name,
+        team_a_id: formData.team_a_id,
+        team_b_id: formData.team_b_id,
         match_date: formData.match_date,
         match_time: formData.match_time,
         tournament_name: formData.tournament_name || null,
@@ -1377,8 +1391,9 @@ export default function AdminMatches() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {matches.map((match) => {
-                  const teamA = teams.find((t) => t.name === match.team_a);
-                  const teamB = teams.find((t) => t.name === match.team_b);
+                  // team_a ve team_b artık join'den geliyor
+                  const teamA = match.team_a;
+                  const teamB = match.team_b;
                   const status = getMatchStatus(match);
                   
                   return (
@@ -1414,7 +1429,7 @@ export default function AdminMatches() {
                             {teamA && (
                               <div className="relative w-8 h-8 rounded overflow-hidden border border-white/10">
                                 <Image
-                                  src={teamA.logo_url}
+                                  src={teamA.logo_url || "/teams/aurora.png"}
                                   alt={teamA.name}
                                   fill
                                   className="object-contain p-0.5"
@@ -1423,7 +1438,7 @@ export default function AdminMatches() {
                               </div>
                             )}
                             <span className="text-sm font-medium text-white">
-                              {match.team_a}
+                              {teamA?.name || 'Unknown'}
                             </span>
                           </div>
                           <span className="text-gray-500">vs</span>
@@ -1432,7 +1447,7 @@ export default function AdminMatches() {
                             {teamB && (
                               <div className="relative w-8 h-8 rounded overflow-hidden border border-white/10">
                                 <Image
-                                  src={teamB.logo_url}
+                                  src={teamB.logo_url || "/teams/aurora.png"}
                                   alt={teamB.name}
                                   fill
                                   className="object-contain p-0.5"
@@ -1441,7 +1456,7 @@ export default function AdminMatches() {
                               </div>
                             )}
                             <span className="text-sm font-medium text-white">
-                              {match.team_b}
+                              {teamB?.name || 'Unknown'}
                             </span>
                           </div>
                         </div>
@@ -1563,7 +1578,7 @@ export default function AdminMatches() {
               <DialogDescription asChild>
                 <div className="mt-2">
                   <div className="text-sm text-white">
-                    {selectedMatch.team_a} vs {selectedMatch.team_b}
+                    {selectedMatch.team_a?.name || 'Unknown'} vs {selectedMatch.team_b?.name || 'Unknown'}
                   </div>
                   <div className="text-xs text-gray-300 mt-1">
                     Maç Tipi: {selectedMatch.prediction_type === "winner" ? "Kazanan" : "Alt/Üst"}
@@ -1598,7 +1613,7 @@ export default function AdminMatches() {
                         )}
                       >
                         <div className="font-semibold text-white">
-                          {selectedMatch.team_a}
+                          {selectedMatch.team_a?.name || 'Unknown'}
                         </div>
                         <div className="text-xs text-gray-400 mt-1">
                           Puan: {selectedMatch.difficulty_score_a}
@@ -1621,7 +1636,7 @@ export default function AdminMatches() {
                         )}
                       >
                         <div className="font-semibold text-white">
-                          {selectedMatch.team_b}
+                          {selectedMatch.team_b?.name || 'Unknown'}
                         </div>
                         <div className="text-xs text-gray-400 mt-1">
                           Puan: {selectedMatch.difficulty_score_b}
@@ -1680,7 +1695,7 @@ export default function AdminMatches() {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs text-gray-400 mb-1 block">
-                          {selectedMatch.team_a} Skoru
+                          {selectedMatch.team_a?.name || 'Takım A'} Skoru
                         </label>
                         <Input
                           type="number"
@@ -1694,7 +1709,7 @@ export default function AdminMatches() {
                       </div>
                       <div>
                         <label className="text-xs text-gray-400 mb-1 block">
-                          {selectedMatch.team_b} Skoru
+                          {selectedMatch.team_b?.name || 'Takım B'} Skoru
                         </label>
                         <Input
                           type="number"

@@ -9,17 +9,24 @@ import { Trophy, ArrowRight, Calendar, Clock, Youtube, Radio, ExternalLink, Targ
 import Image from "next/image";
 import SponsorBanner from "@/components/sponsor-banner";
 
+interface Team {
+  id: string | number;
+  name: string;
+  short_code: string | null;
+  logo_url: string | null;
+}
+
 interface Match {
   id: string;
-  team_a: string;
-  team_b: string;
+  team_a_id: string | number;
+  team_b_id: string | number;
+  team_a: Team | null;
+  team_b: Team | null;
   match_time: string;
   match_date: string | null;
   difficulty_score_a: number;
   difficulty_score_b: number;
   tournament_name: string | null;
-  team_a_logo?: string | null;
-  team_b_logo?: string | null;
 }
 
 interface MatchOfTheDay {
@@ -128,21 +135,32 @@ export default function Home() {
         try {
           const { data: matchData, error: matchError } = await supabase
             .from("matches")
-            .select("*")
+            .select(`
+              *,
+              team_a:teams!matches_team_a_id_fkey (
+                id,
+                name,
+                short_code,
+                logo_url
+              ),
+              team_b:teams!matches_team_b_id_fkey (
+                id,
+                name,
+                short_code,
+                logo_url
+              )
+            `)
             .eq("id", (data as any).match_of_the_day_id)
             .single();
 
           if (!matchError && matchData) {
             const match = matchData as any;
-            // Takım logolarını bul
-            const teamA = teams.find((t) => t.name === match.team_a);
-            const teamB = teams.find((t) => t.name === match.team_b);
-
+            // Join'den gelen team bilgileri zaten mevcut
             setMatchOfTheDay({
-              team_a: match.team_a,
-              team_b: match.team_b,
-              team_a_logo: teamA?.logo_url || null,
-              team_b_logo: teamB?.logo_url || null,
+              team_a: match.team_a?.name || '',
+              team_b: match.team_b?.name || '',
+              team_a_logo: match.team_a?.logo_url || null,
+              team_b_logo: match.team_b?.logo_url || null,
               match_date: match.match_date || null,
               match_time: match.match_time || "20:00",
               tournament_name: match.tournament_name || null,
@@ -222,17 +240,39 @@ export default function Home() {
         return;
       }
 
-      // Match IDs'den maçları çek
+      // Match IDs'den maçları çek - Teams ile join ederek
       const { data: matchesData, error: matchesError } = await supabase
         .from("matches")
-        .select("*")
+        .select(`
+          *,
+          team_a:teams!matches_team_a_id_fkey (
+            id,
+            name,
+            short_code,
+            logo_url
+          ),
+          team_b:teams!matches_team_b_id_fkey (
+            id,
+            name,
+            short_code,
+            logo_url
+          )
+        `)
         .in("id", matchIds.slice(0, 3)); // Maksimum 3 maç
 
       if (matchesError) {
         console.error("Homepage pick maçları yüklenirken hata:", matchesError);
         setHomepagePicks([]);
       } else {
-        setHomepagePicks(matchesData || []);
+        // Join'den gelen verileri formatla
+        const formattedMatches = (matchesData || []).map((match: any) => ({
+          ...match,
+          team_a: match.team_a?.name || '',
+          team_b: match.team_b?.name || '',
+          team_a_logo: match.team_a?.logo_url || null,
+          team_b_logo: match.team_b?.logo_url || null,
+        }));
+        setHomepagePicks(formattedMatches);
       }
     } catch (error) {
       console.error("Homepage picks yüklenirken hata:", error);

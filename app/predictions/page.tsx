@@ -15,12 +15,19 @@ import { getActiveSeasonId } from "@/lib/season-utils";
 import { isMatchLocked, getPredictionLockMinutes } from "@/lib/match-utils";
 
 // Veritabanı Tipleri
+interface Team {
+  id: string | number;
+  name: string;
+  short_code: string | null;
+  logo_url: string | null;
+}
+
 interface Match {
   id: string | number;
-  team_a: string;
-  team_b: string;
-  team_a_logo: string | null;
-  team_b_logo: string | null;
+  team_a_id: string | number;
+  team_b_id: string | number;
+  team_a: Team | null;
+  team_b: Team | null;
   match_date: string | null;
   match_time: string;
   difficulty_score_a: number;
@@ -63,10 +70,24 @@ export default function PredictionsPage() {
     await getPredictionLockMinutes();
 
     try {
-      // TÜM MAÇLARI ÇEK - Timeout kaldırıldı
+      // TÜM MAÇLARI ÇEK - Teams ile join ederek
       const { data, error } = await supabase
         .from("matches")
-        .select("*")
+        .select(`
+          *,
+          team_a:teams!matches_team_a_id_fkey (
+            id,
+            name,
+            short_code,
+            logo_url
+          ),
+          team_b:teams!matches_team_b_id_fkey (
+            id,
+            name,
+            short_code,
+            logo_url
+          )
+        `)
         .order("match_date", { ascending: true })
         .order("match_time", { ascending: true });
       
@@ -120,7 +141,9 @@ export default function PredictionsPage() {
         
         if (isDisplayMatch) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`[Predictions Filter] Maç ${match.id} (${match.team_a} vs ${match.team_b}) filtrelendi - is_display_match: ${match.is_display_match}`);
+            const teamAName = match.team_a?.name || 'Unknown';
+            const teamBName = match.team_b?.name || 'Unknown';
+            console.log(`[Predictions Filter] Maç ${match.id} (${teamAName} vs ${teamBName}) filtrelendi - is_display_match: ${match.is_display_match}`);
           }
           return false; // Maçlar sayfası için olan maçlar tahminler sayfasında gösterilmez
         }
@@ -154,65 +177,14 @@ export default function PredictionsPage() {
         return true;
       });
 
-      // Takım logolarını çek
-      const teamNames = new Set<string>();
-      filteredMatches.forEach((match: any) => {
-        if (match.team_a) teamNames.add(match.team_a);
-        if (match.team_b) teamNames.add(match.team_b);
-      });
-
-      let teamLogosMap: Record<string, string | null> = {};
-      
-      if (teamNames.size > 0) {
-        // Önce maçlardaki takım isimleriyle sorgula (exact match)
-        const { data: teamsData, error: teamsError } = await supabase
-          .from("teams")
-          .select("name, logo_url");
-
-        if (!teamsError && teamsData) {
-          // Hem orijinal hem lowercase key'lerle map'le
-          teamsData.forEach((team: any) => {
-            if (team.name) {
-              // Orijinal isimle
-              teamLogosMap[team.name] = team.logo_url || null;
-              // Lowercase ile (case-insensitive eşleştirme)
-              const lowerName = team.name.toLowerCase().trim();
-              if (lowerName && !teamLogosMap[lowerName]) {
-                teamLogosMap[lowerName] = team.logo_url || null;
-              }
-            }
-          });
-        }
-      }
-
-      // Maçlara logo URL'lerini ekle - case-insensitive eşleştirme
-      const matchesWithLogos = filteredMatches.map((match: any) => {
-        const teamAKey = match.team_a?.toLowerCase().trim() || '';
-        const teamBKey = match.team_b?.toLowerCase().trim() || '';
-        
-        const teamALogo = teamLogosMap[teamAKey] || teamLogosMap[match.team_a] || null;
-        const teamBLogo = teamLogosMap[teamBKey] || teamLogosMap[match.team_b] || null;
-        
-        // Debug: Logo URL'leri yüklenemediyse uyarı ver
-        if (process.env.NODE_ENV === 'development' && match.team_a && !teamALogo) {
-          console.warn(`[Logo] ${match.team_a} için logo bulunamadı. Map'te var mı?`, {
-            teamAKey,
-            originalName: match.team_a,
-            availableKeys: Object.keys(teamLogosMap).slice(0, 5)
-          });
-        }
-        
-        return {
-          ...match,
-          team_a_logo: teamALogo,
-          team_b_logo: teamBLogo,
-        };
-      });
+      // Join'den gelen team bilgileri zaten match objesinde mevcut
+      // Ekstra bir mapping işlemi gerekmez
+      const matchesWithTeams = filteredMatches;
 
       // State'e Aktar
       if (isMounted) {
-        setMatches(matchesWithLogos || []);
-        console.log("Tahminler sayfası - Maçlar yüklendi:", matchesWithLogos?.length || 0);
+        setMatches(matchesWithTeams || []);
+        console.log("Tahminler sayfası - Maçlar yüklendi:", matchesWithTeams?.length || 0);
       }
 
     } catch (err: any) {
@@ -513,12 +485,17 @@ export default function PredictionsPage() {
         const match = matches.find((m) => m.id.toString() === matchId.toString());
         if (!match) return null;
         
+        const teamAName = match.team_a?.name || '';
+        const teamBName = match.team_b?.name || '';
+        const teamALogo = match.team_a?.logo_url || null;
+        const teamBLogo = match.team_b?.logo_url || null;
+        
         const data = {
           id: typeof matchId === 'string' ? parseInt(matchId) : matchId,
-          teamA: match.team_a,
-          teamB: match.team_b,
-          teamALogo: (match.team_a_logo && match.team_a_logo.trim() !== "") ? match.team_a_logo : null,
-          teamBLogo: (match.team_b_logo && match.team_b_logo.trim() !== "") ? match.team_b_logo : null,
+          teamA: teamAName,
+          teamB: teamBName,
+          teamALogo: (teamALogo && teamALogo.trim() !== "") ? teamALogo : null,
+          teamBLogo: (teamBLogo && teamBLogo.trim() !== "") ? teamBLogo : null,
           selectedTeam: team!,
           matchTime: match.match_time,
           matchDate: match.match_date ? (() => {
@@ -533,16 +510,16 @@ export default function PredictionsPage() {
               return match.match_date;
             }
           })() : "",
-          optionALabel: match.option_a_label || match.team_a,
-          optionBLabel: match.option_b_label || match.team_b,
+          optionALabel: match.option_a_label || teamAName,
+          optionBLabel: match.option_b_label || teamBName,
           predictionType: match.prediction_type || 'winner' as const,
         };
         
         // Debug: Logo URL'lerini konsola yazdır
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[selectedMatchesData] Match ${matchId} - ${match.team_a} vs ${match.team_b}`);
-          console.log(`  teamALogo (from match):`, match.team_a_logo);
-          console.log(`  teamBLogo (from match):`, match.team_b_logo);
+          console.log(`[selectedMatchesData] Match ${matchId} - ${teamAName} vs ${teamBName}`);
+          console.log(`  teamALogo (from match):`, teamALogo);
+          console.log(`  teamBLogo (from match):`, teamBLogo);
           console.log(`  data.teamALogo:`, data.teamALogo);
           console.log(`  data.teamBLogo:`, data.teamBLogo);
           console.log(`  selectedTeam:`, team);
@@ -784,10 +761,10 @@ export default function PredictionsPage() {
                         )}
                         <PredictionMatchCard
                           id={typeof match.id === 'string' ? parseInt(match.id) : match.id}
-                          teamA={match.team_a}
-                          teamB={match.team_b}
-                          teamALogo={match.team_a_logo}
-                          teamBLogo={match.team_b_logo}
+                          teamA={match.team_a?.name || ''}
+                          teamB={match.team_b?.name || ''}
+                          teamALogo={match.team_a?.logo_url || null}
+                          teamBLogo={match.team_b?.logo_url || null}
                           matchTime={match.match_time}
                           matchDate={formattedDate}
                           tournamentName={match.tournament_name}
@@ -797,8 +774,8 @@ export default function PredictionsPage() {
                           selectedTeam={(selectedTeams[match.id] || userPrediction || null) as "A" | "B" | null | undefined}
                           onSelectTeam={(team) => handleSelectTeam(match.id, team)}
                           predictionType={match.prediction_type || 'winner'}
-                          optionALabel={match.option_a_label || match.team_a}
-                          optionBLabel={match.option_b_label || match.team_b}
+                          optionALabel={match.option_a_label || match.team_a?.name || ''}
+                          optionBLabel={match.option_b_label || match.team_b?.name || ''}
                           questionText={match.question_text}
                           analysisNote={match.analysis_note}
                           isLocked={isDisabled}

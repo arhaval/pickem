@@ -9,12 +9,19 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/supabase/client";
 import Image from "next/image";
 
+interface Team {
+  id: string | number;
+  name: string;
+  short_code: string | null;
+  logo_url: string | null;
+}
+
 interface Match {
   id: string;
-  teamA: string;
-  teamB: string;
-  teamALogo?: string | null;
-  teamBLogo?: string | null;
+  team_a_id: string | number;
+  team_b_id: string | number;
+  team_a: Team | null;
+  team_b: Team | null;
   matchTime: string;
   matchDate: string;
   status: "upcoming" | "live" | "finished";
@@ -64,10 +71,36 @@ export default function MatchesPage() {
     try {
       setLoading(true);
       
-      // matches tablosundan sadece görüntüleme maçlarını çek - Sadece gerekli kolonları seç
+      // matches tablosundan sadece görüntüleme maçlarını çek - Teams ile join ederek
       const { data: matchesData, error } = await supabase
         .from("matches")
-        .select("id, team_a, team_b, team_a_logo, team_b_logo, match_time, match_date, tournament_name, tournament_stage, match_format, hltv_ranking_a, hltv_ranking_b, hltv_url, stream_links, score_a, score_b, winner")
+        .select(`
+          id,
+          match_time,
+          match_date,
+          tournament_name,
+          tournament_stage,
+          match_format,
+          hltv_ranking_a,
+          hltv_ranking_b,
+          hltv_url,
+          stream_links,
+          score_a,
+          score_b,
+          winner,
+          team_a:teams!matches_team_a_id_fkey (
+            id,
+            name,
+            short_code,
+            logo_url
+          ),
+          team_b:teams!matches_team_b_id_fkey (
+            id,
+            name,
+            short_code,
+            logo_url
+          )
+        `)
         .eq("is_display_match", true)
         .order("match_date", { ascending: true })
         .order("match_time", { ascending: true });
@@ -77,41 +110,14 @@ export default function MatchesPage() {
         setMatches([]);
         return;
       }
-      
-      // Takım logolarını teams tablosundan çek
-      const teamNames = new Set<string>();
-      (matchesData || []).forEach((match: any) => {
-        if (match.team_a) teamNames.add(match.team_a);
-        if (match.team_b) teamNames.add(match.team_b);
-      });
-
-      let teamLogosMap: Record<string, string | null> = {};
-      
-      if (teamNames.size > 0) {
-        const { data: teamsData, error: teamsError } = await supabase
-          .from("teams")
-          .select("name, logo_url");
-
-        if (!teamsError && teamsData) {
-          teamsData.forEach((team: any) => {
-            if (team.name) {
-              teamLogosMap[team.name] = team.logo_url || null;
-              const lowerName = team.name.toLowerCase().trim();
-              if (lowerName && !teamLogosMap[lowerName]) {
-                teamLogosMap[lowerName] = team.logo_url || null;
-              }
-            }
-          });
-        }
-      }
 
       // Veritabanı formatını Match formatına çevir
       const formattedMatches: Match[] = (matchesData || []).map((match: any) => {
-        // Takım logolarını teams tablosundan al
-        const teamAKey = match.team_a?.toLowerCase().trim() || '';
-        const teamBKey = match.team_b?.toLowerCase().trim() || '';
-        const teamALogo = teamLogosMap[teamAKey] || teamLogosMap[match.team_a] || (match as any).team_a_logo || null;
-        const teamBLogo = teamLogosMap[teamBKey] || teamLogosMap[match.team_b] || (match as any).team_b_logo || null;
+        // Join'den gelen team bilgileri zaten mevcut
+        const teamAName = match.team_a?.name || '';
+        const teamBName = match.team_b?.name || '';
+        const teamALogo = match.team_a?.logo_url || null;
+        const teamBLogo = match.team_b?.logo_url || null;
         // Tarih formatını düzenle (YYYY-MM-DD -> DD.MM.YYYY)
         let formattedDate = match.match_date || "";
         if (formattedDate) {
@@ -152,8 +158,8 @@ export default function MatchesPage() {
 
         return {
           id: match.id,
-          teamA: match.team_a,
-          teamB: match.team_b,
+          teamA: teamAName,
+          teamB: teamBName,
           teamALogo: teamALogo,
           teamBLogo: teamBLogo,
           matchTime: match.match_time,
