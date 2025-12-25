@@ -542,12 +542,12 @@ export default function BackupPage() {
         </div>
         <div className="mt-4 p-3 bg-black/20 rounded-lg">
           <p className="text-xs text-gray-400">
-            <strong className="text-white">İçerik:</strong> Üyeler ({backupData?.statistics?.total_users || "?"}), 
-            Maçlar ({backupData?.statistics?.total_matches || "?"}), 
-            Tahminler ({backupData?.statistics?.total_predictions || "?"}), 
-            Sezon Puanları ({backupData?.statistics?.total_season_points || "?"}), 
-            Sezonlar ({backupData?.statistics?.total_seasons || "?"}), 
-            Takımlar ({backupData?.statistics?.total_teams || "?"})
+            <strong className="text-white">İçerik:</strong> Üyeler ({backupData?.statistics?.total_users ?? "?"}), 
+            Maçlar ({backupData?.statistics?.total_matches ?? "?"}), 
+            Tahminler ({backupData?.statistics?.total_predictions ?? "?"}), 
+            Sezon Puanları ({backupData?.statistics?.total_season_points ?? "?"}), 
+            Sezonlar ({backupData?.statistics?.total_seasons ?? "?"}), 
+            Takımlar ({backupData?.statistics?.total_teams ?? "?"})
           </p>
         </div>
       </div>
@@ -650,6 +650,7 @@ export default function BackupPage() {
               JSON Export
             </Button>
           </div>
+        </div>
         </div>
       </div>
 

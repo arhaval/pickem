@@ -22,7 +22,7 @@ export function useRankingVisibility() {
             .eq("id", user.id)
             .single();
           
-          userIsAdmin = profile?.is_admin === true;
+          userIsAdmin = (profile as any)?.is_admin === true;
           setIsAdmin(userIsAdmin);
         }
 
@@ -81,7 +81,7 @@ export function useRankingVisibility() {
                 .single();
               
               // Admin ise güncelleme yapma (her zaman görünür)
-              if (profile?.is_admin === true) return;
+              if ((profile as any)?.is_admin === true) return;
             }
             
             const newValue = (payload.new as any)?.is_ranking_visible;

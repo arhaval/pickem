@@ -124,7 +124,8 @@ export default function PredictionsReviewPage() {
         const predictionsMap: Record<string, Prediction[]> = {};
         const userIds = new Set<string>();
 
-        for (const match of matchesData || []) {
+        for (const match of (matchesData || []) as Match[]) {
+          const matchId = String(match.id);
           const { data: predData, error: predError } = await supabase
             .from("predictions")
             .select(`
@@ -135,11 +136,11 @@ export default function PredictionsReviewPage() {
                 total_points
               )
             `)
-            .eq("match_id", match.id)
+            .eq("match_id", matchId)
             .order("created_at", { ascending: false });
 
           if (!predError && predData) {
-            predictionsMap[match.id] = predData.map((p: any) => ({
+            predictionsMap[matchId] = predData.map((p: any) => ({
               ...p,
               user: p.user || null,
             }));
@@ -198,10 +199,13 @@ export default function PredictionsReviewPage() {
     try {
       setIsSaving(true);
 
-      const { error } = await supabase
-        .from("matches")
+      if (!selectedMatch) return;
+      
+      const matchId = String(selectedMatch.id);
+      const { error } = await (supabase
+        .from("matches") as any)
         .update({ winner: selectedWinner })
-        .eq("id", selectedMatch.id);
+        .eq("id", matchId);
 
       if (error) {
         alert("Hata: " + error.message);
