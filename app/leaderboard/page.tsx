@@ -37,7 +37,7 @@ export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<SeasonPoints[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const { isRankingVisible, loading: rankingVisibilityLoading } = useRankingVisibility();
+  const { isRankingVisible, loading: rankingVisibilityLoading, isAdmin } = useRankingVisibility();
 
   useEffect(() => {
     loadSeasons();
@@ -178,8 +178,8 @@ export default function LeaderboardPage() {
 
   const selectedSeason = seasons.find((s) => s.id === selectedSeasonId);
 
-  // Sıralama kapalıysa mesaj göster
-  if (!rankingVisibilityLoading && !isRankingVisible) {
+  // Sıralama kapalıysa mesaj göster (admin hariç - admin her zaman görebilir)
+  if (!rankingVisibilityLoading && !isRankingVisible && !isAdmin) {
     return (
       <div className="min-h-screen bg-[#0a0e1a]">
         <div className="container mx-auto px-4 py-8 max-w-4xl">

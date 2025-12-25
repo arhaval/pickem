@@ -35,10 +35,10 @@ const getRankBorder = (rank: number) => {
 };
 
 export default function LeaderboardPreview() {
-  const { isRankingVisible, loading } = useRankingVisibility();
+  const { isRankingVisible, loading, isAdmin } = useRankingVisibility();
 
-  // Sıralama kapalıysa hiçbir şey gösterme
-  if (loading || !isRankingVisible) {
+  // Sıralama kapalıysa hiçbir şey gösterme (admin hariç - admin her zaman görebilir)
+  if (loading || (!isRankingVisible && !isAdmin)) {
     return null;
   }
 

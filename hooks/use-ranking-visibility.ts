@@ -6,11 +6,34 @@ import { supabase } from "@/supabase/client";
 export function useRankingVisibility() {
   const [isRankingVisible, setIsRankingVisible] = useState<boolean>(true);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     const loadRankingVisibility = async () => {
       try {
-        // Önce tüm kolonları çek, is_ranking_visible varsa kullan
+        // Önce kullanıcının admin olup olmadığını kontrol et
+        const { data: { user } } = await supabase.auth.getUser();
+        let userIsAdmin = false;
+
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("is_admin")
+            .eq("id", user.id)
+            .single();
+          
+          userIsAdmin = profile?.is_admin === true;
+          setIsAdmin(userIsAdmin);
+        }
+
+        // Admin ise her zaman görünür
+        if (userIsAdmin) {
+          setIsRankingVisible(true);
+          setLoading(false);
+          return;
+        }
+
+        // Normal kullanıcılar için site_settings'ten kontrol et
         const { data, error } = await supabase
           .from("site_settings")
           .select("*")
@@ -34,7 +57,7 @@ export function useRankingVisibility() {
 
     loadRankingVisibility();
 
-    // Real-time subscription - sadece kolon varsa
+    // Real-time subscription - admin kontrolü için
     let channel: any = null;
     try {
       channel = supabase
@@ -47,7 +70,20 @@ export function useRankingVisibility() {
             table: "site_settings",
             filter: "id=eq.1",
           },
-          (payload) => {
+          async (payload) => {
+            // Admin kontrolü yap (her zaman güncel)
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("is_admin")
+                .eq("id", user.id)
+                .single();
+              
+              // Admin ise güncelleme yapma (her zaman görünür)
+              if (profile?.is_admin === true) return;
+            }
+            
             const newValue = (payload.new as any)?.is_ranking_visible;
             if (newValue !== undefined) {
               setIsRankingVisible(newValue);
@@ -66,6 +102,6 @@ export function useRankingVisibility() {
     };
   }, []);
 
-  return { isRankingVisible, loading };
+  return { isRankingVisible, loading, isAdmin };
 }
 

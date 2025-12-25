@@ -18,6 +18,8 @@ import {
   Youtube,
   LogOut,
   Target,
+  CheckSquare,
+  Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,11 @@ const navigation = [
     name: "Tahminler",
     href: "/admin/matches",
     icon: Calendar,
+  },
+  {
+    name: "Tahmin Kontrolü",
+    href: "/admin/predictions-review",
+    icon: CheckSquare,
   },
   {
     name: "Maçlar Sayfası",
@@ -63,6 +70,11 @@ const navigation = [
     name: "Site Ayarları",
     href: "/admin/settings",
     icon: Settings,
+  },
+  {
+    name: "Yedekleme",
+    href: "/admin/backup",
+    icon: Database,
   },
   {
     name: "Ana Sayfa Videoları",
