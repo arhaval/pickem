@@ -120,14 +120,14 @@ export interface Database {
       matches: {
         Row: {
           id: string
-          team_a: string
-          team_b: string
+          team_a_id: string | number // Foreign key to teams.id
+          team_b_id: string | number // Foreign key to teams.id
           match_time: string
           match_date?: string | null
           winner: string | null
           difficulty_score_a: number
           difficulty_score_b: number
-          season_id: string | null
+          season_id: string | number | null // BIGINT veya UUID
           live_lobby_id: string | null
           prediction_type: 'winner' | 'over_under' | 'custom'
           option_a_label: string
@@ -135,21 +135,42 @@ export interface Database {
           question_text: string | null
           analysis_note: string | null
           tournament_name: string | null
+          tournament_stage?: string | null
+          match_format?: string | null
           is_archived: boolean | null
+          is_display_match?: boolean | null
           score_a: number | null
           score_b: number | null
+          hltv_ranking_a?: number | null
+          hltv_ranking_b?: number | null
+          hltv_url?: string | null
+          stream_links?: Json | null
+          prediction_lock_minutes_before_match?: number | null
           created_at: string
+          // Nested team objects (when joined via Supabase select)
+          team_a?: {
+            id: string | number
+            name: string
+            short_code: string | null
+            logo_url: string | null
+          } | null
+          team_b?: {
+            id: string | number
+            name: string
+            short_code: string | null
+            logo_url: string | null
+          } | null
         }
         Insert: {
           id?: string
-          team_a: string
-          team_b: string
+          team_a_id: string | number
+          team_b_id: string | number
           match_time: string
           match_date?: string | null
           winner?: string | null
           difficulty_score_a?: number
           difficulty_score_b?: number
-          season_id?: string | null
+          season_id?: string | number | null
           live_lobby_id?: string | null
           prediction_type?: 'winner' | 'over_under' | 'custom'
           option_a_label: string
@@ -157,21 +178,29 @@ export interface Database {
           question_text?: string | null
           analysis_note?: string | null
           tournament_name?: string | null
+          tournament_stage?: string | null
+          match_format?: string | null
           is_archived?: boolean | null
+          is_display_match?: boolean | null
           score_a?: number | null
           score_b?: number | null
+          hltv_ranking_a?: number | null
+          hltv_ranking_b?: number | null
+          hltv_url?: string | null
+          stream_links?: Json | null
+          prediction_lock_minutes_before_match?: number | null
           created_at?: string
         }
         Update: {
           id?: string
-          team_a?: string
-          team_b?: string
+          team_a_id?: string | number
+          team_b_id?: string | number
           match_time?: string
           match_date?: string | null
           winner?: string | null
           difficulty_score_a?: number
           difficulty_score_b?: number
-          season_id?: string | null
+          season_id?: string | number | null
           live_lobby_id?: string | null
           prediction_type?: 'winner' | 'over_under' | 'custom'
           option_a_label?: string
@@ -179,9 +208,17 @@ export interface Database {
           question_text?: string | null
           analysis_note?: string | null
           tournament_name?: string | null
+          tournament_stage?: string | null
+          match_format?: string | null
           is_archived?: boolean | null
+          is_display_match?: boolean | null
           score_a?: number | null
           score_b?: number | null
+          hltv_ranking_a?: number | null
+          hltv_ranking_b?: number | null
+          hltv_url?: string | null
+          stream_links?: Json | null
+          prediction_lock_minutes_before_match?: number | null
           created_at?: string
         }
       }
@@ -219,25 +256,28 @@ export interface Database {
       }
       teams: {
         Row: {
-          id: number
+          id: string | number // UUID veya BIGINT olabilir
           name: string
-          logo_url: string
-          short_code: string
+          short_code: string | null
+          logo_url: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
-          id?: number
+          id?: string | number
           name: string
-          logo_url: string
-          short_code: string
+          short_code?: string | null
+          logo_url?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
-          id?: number
+          id?: string | number
           name?: string
-          logo_url?: string
-          short_code?: string
+          short_code?: string | null
+          logo_url?: string | null
           created_at?: string
+          updated_at?: string
         }
       }
       site_settings: {
