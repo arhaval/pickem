@@ -126,11 +126,14 @@ export default function PredictionsPage() {
 
       // FİLTRELEME - TEMEL KONTROLLER + AKTİF SEZON
       const filteredMatches = (data || []).filter((match: any) => {
-        // 1. Arşivlenmemiş
+        // 1. Arşivlenmiş ama sonuçlanmamış maçları gizle
+        // Sonuçlanmış maçlar (winner var) gösterilmeli ki kullanıcılar kazananları görebilsin
         const isArchived = match.is_archived === true;
-        if (isArchived) {
-          return false;
+        const hasWinner = match.winner !== null && match.winner !== undefined;
+        if (isArchived && !hasWinner) {
+          return false; // Arşivlenmiş ama sonuçlanmamış maçları gizle
         }
+        // Sonuçlanmış maçlar (winner var) gösterilmeye devam eder
         
         // 2. is_display_match != true (tahminler için)
         // is_display_match === true olan maçlar SADECE maçlar sayfasında gösterilir, tahminler sayfasında ASLA gösterilmez
