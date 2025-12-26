@@ -72,7 +72,7 @@ export default function PredictionsReviewPage() {
   const [selectedWinner, setSelectedWinner] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterWinner, setFilterWinner] = useState<string>("all"); // "all", "null", "not-null"
+  const [filterWinner, setFilterWinner] = useState<string>("null"); // "all", "null", "not-null" - Varsayılan: sadece sonuçlanmamış maçlar
 
   // Verileri yükle
   useEffect(() => {
@@ -111,6 +111,7 @@ export default function PredictionsReviewPage() {
       } else if (filterWinner === "not-null") {
         query = query.not("winner", "is", null);
       }
+      // "all" durumunda tüm maçlar gösterilir (filtre yok)
 
       const { data: matchesData, error: matchesError } = await query;
 
